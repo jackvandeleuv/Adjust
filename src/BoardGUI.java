@@ -12,22 +12,60 @@ public final class BoardGUI implements ActionListener {
     private String beforeFEN;
     private String afterFEN = "r1b1kbnr/pp3ppp/1qn1p3/2ppP3/3P4/2P2N2/PP3PPP/RNBQKB1R b KQkq e3 0 1";
 
-    public BoardGUI() {
+    public BoardGUI() throws InterruptedException {
         window = new JFrame();
-        window.setSize(500, 500);
+        window.setSize(800, 600);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JPanel pane = new JPanel();
 
         boardWrapper = new JPanel();
         GridLayout gLayout = new GridLayout(8, 8);
         boardWrapper.setLayout(gLayout);
-
+        Dimension dimension = new Dimension(400, 400);
+        boardWrapper.setPreferredSize(dimension);
         this.renderBoard();
 
-        window.add(boardWrapper);
+        JPanel leftCol = new JPanel();
+
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, 1));
+        JPanel lineName = new JPanel();
+        JLabel lineLabel = new JLabel("French Defense, Agincourt Defense");
+        lineName.add(lineLabel);
+        JPanel toMovePane = new JPanel();
+        JLabel toMoveLabel = new JLabel("WHITE TO MOVE");
+        toMovePane.add(toMoveLabel);
+        infoPanel.add(lineName);
+        infoPanel.add(toMovePane);
+        leftCol.add(infoPanel);
+
+        JPanel buttonGroup = new JPanel();
+        JButton showAnswer = new JButton("Show Answer");
+        JPanel arrowGroup = new JPanel();
+        JButton backArrow = new JButton("<");
+        JButton forwardArrow = new JButton(">");
+        arrowGroup.add(backArrow);
+        arrowGroup.add(forwardArrow);
+        JButton nextPos = new JButton("Next Position");
+        buttonGroup.add(showAnswer);
+        buttonGroup.add(arrowGroup);
+        buttonGroup.add(nextPos);
+        leftCol.add(buttonGroup);
+
+
+        JPanel rightCol = new JPanel();
+
+        pane.add(leftCol);
+        pane.add(boardWrapper);
+        pane.add(rightCol);
+
+        pane.setLayout(new BoxLayout(pane, 0));
+
+        window.add(pane);
+
         window.setVisible(true);
 
         this.processFen(afterFEN);
-
     }
 
     private void renderBoard() {
@@ -118,26 +156,16 @@ public final class BoardGUI implements ActionListener {
             panel = newPanel;
         }
 
-        public void setPiece(Piece p) {
-            if (p == null) {
+        public void setPiece(Piece newPiece) {
+            if (newPiece == null) {
                 throw new IllegalArgumentException("Can't set null piece!");
             }
 
             // !!! Find way to clone the piece to maintain encapsulation.
-            piece = p;
-            try {
-                BufferedImage bImage = piece.getImage();
-                Image image = bImage.getScaledInstance(panel.getWidth(), panel.getHeight(), Image.SCALE_SMOOTH);
-                ImageIcon iIcon = new ImageIcon(image);
-                JLabel imageLabel = new JLabel();
-                imageLabel.setIcon(iIcon);
-                panel.add(imageLabel);
-            } catch (IOException ioe) {
-                System.out.println("Threw new IOException:");
-                System.out.println(ioe.getMessage());
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
+            piece = newPiece;
+            piece.setxAxis(panel.getX());
+            piece.setyAxis(panel.getY());
+            window.add(piece);
         }
     }
 

@@ -5,6 +5,11 @@
 
 public class Main {
     public static void main(String[] args) {
-        new BoardGUI();
+        try {
+            new BoardGUI();
+
+        } catch (InterruptedException ie) {
+            System.out.println(ie.getMessage());
+        }
     }
 }
