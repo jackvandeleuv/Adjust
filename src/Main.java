@@ -13,5 +13,6 @@ public class Main {
 //        }
         InitDB.makeTables();
         InitDB.addTestData();
+        ReviewEngine.getNextCard(1);
     }
 }
