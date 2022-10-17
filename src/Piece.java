@@ -3,7 +3,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.swing.*;
 
-public abstract class Piece extends JPanel {
+public abstract class Piece {
     private int pos;
     private int xAxis;
     private int yAxis;
@@ -37,18 +37,18 @@ public abstract class Piece extends JPanel {
 
     public abstract int getValidDestinations();
 
-    public abstract BufferedImage getImage() throws Exception;
+    public abstract char getImage() throws Exception;
 
-    @Override
-    public void paintComponent(Graphics g) {
-        try {
-            BufferedImage bImage = this.getImage();
-            Image resizedImage = bImage.getScaledInstance(100, 100, BufferedImage.SCALE_DEFAULT);
-            System.out.println(xAxis);
-            System.out.println(yAxis);
-            g.drawImage(resizedImage, xAxis, yAxis, this);
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-        }
-    }
+//    @Override
+//    public void paintComponent(Graphics g) {
+//        try {
+//            BufferedImage bImage = this.getImage();
+//            Image resizedImage = bImage.getScaledInstance(100, 100, BufferedImage.SCALE_DEFAULT);
+//            System.out.println(xAxis);
+//            System.out.println(yAxis);
+//            g.drawImage(resizedImage, xAxis, yAxis, this);
+//        } catch (Exception ex) {
+//            System.out.println(ex.getMessage());
+//        }
+//    }
 }

@@ -16,12 +16,14 @@ public final class Bishop extends Piece {
     }
 
     @Override
-    public BufferedImage getImage() throws Exception {
+    public char getImage() throws Exception {
         if (super.getTeam() == 'w') {
-            return ImageIO.read(new File("img/Chess_blt45.svg.png"));
+//            return ImageIO.read(new File("img/Chess_blt45.svg.png"));
+            return 'B';
         }
         if (super.getTeam() == 'b') {
-            return ImageIO.read(new File("img/Chess_bdt45.svg.png"));
+//            return ImageIO.read(new File("img/Chess_bdt45.svg.png"));
+            return 'b';
         }
         throw new Exception("This piece has no color/team!");
     }

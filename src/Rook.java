@@ -16,14 +16,16 @@ public final class Rook extends Piece {
     }
 
     @Override
-    public BufferedImage getImage() throws Exception {
+    public char getImage() throws Exception {
         if (super.getTeam() == 'w') {
-            BufferedImage image = ImageIO.read(new File("img/Chess_rlt45.svg.png"));
-            return image;
+//            BufferedImage image = ImageIO.read(new File("img/Chess_rlt45.svg.png"));
+//            return image;
+            return 'R';
         }
         if (super.getTeam() == 'b') {
-            BufferedImage image = ImageIO.read(new File("img/Chess_rdt45.svg.png"));
-            return image;
+//            BufferedImage image = ImageIO.read(new File("img/Chess_rdt45.svg.png"));
+//            return image;
+            return 'r';
         }
         throw new Exception("This piece has no color/team!");
     }

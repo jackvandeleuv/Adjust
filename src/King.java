@@ -16,14 +16,16 @@ public final class King extends Piece {
     }
 
     @Override
-    public BufferedImage getImage() throws Exception {
+    public char getImage() throws Exception {
         if (super.getTeam() == 'w') {
-            BufferedImage image = ImageIO.read(new File("img/Chess_klt45.svg.png"));
-            return image;
+//            BufferedImage image = ImageIO.read(new File("img/Chess_klt45.svg.png"));
+//            return image;
+            return 'K';
         }
         if (super.getTeam() == 'b') {
-            BufferedImage image = ImageIO.read(new File("img/Chess_kdt45.svg.png"));
-            return image;
+//            BufferedImage image = ImageIO.read(new File("img/Chess_kdt45.svg.png"));
+//            return image;
+            return 'k';
         }
         throw new Exception("This piece has no color/team!");
     }

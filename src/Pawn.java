@@ -18,14 +18,16 @@ public final class Pawn extends Piece {
     }
 
     @Override
-    public BufferedImage getImage() throws Exception {
+    public char getImage() throws Exception {
         if (super.getTeam() == 'w') {
-            BufferedImage image = ImageIO.read(new File("img/Chess_plt45.svg.png"));
-            return image;
+//            BufferedImage image = ImageIO.read(new File("img/Chess_plt45.svg.png"));
+//            return image;
+            return 'P';
         }
         if (super.getTeam() == 'b') {
-            BufferedImage image = ImageIO.read(new File("img/Chess_pdt45.svg.png"));
-            return image;
+//            BufferedImage image = ImageIO.read(new File("img/Chess_pdt45.svg.png"));
+//            return image;
+            return 'p';
         }
         throw new Exception("This piece has no color/team!");
     }

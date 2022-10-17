@@ -8,13 +8,20 @@ import java.io.IOException;
 public final class BoardGUI implements ActionListener {
     private final JFrame window;
     private final JPanel boardWrapper;
+    private final JButton[] selfRating;
+    private final JButton showAnswer;
+    private final JPanel infoPanel;
+    private final JPanel leftCol;
+    private final JPanel buttonBox;
     private Square[] squares;
-    private String beforeFEN;
-    private String afterFEN = "r1b1kbnr/pp3ppp/1qn1p3/2ppP3/3P4/2P2N2/PP3PPP/RNBQKB1R b KQkq e3 0 1";
+    private String beforeFEN = "rnbqkbnr/pp3ppp/4p3/2ppP3/3P4/8/PPP2PPP/RNBQKBNR b KQkq e3 0 1";
+    private String afterFEN = "rnbqkbnr/pp3ppp/4p3/2ppP3/3P4/5N2/PPP2PPP/RNBQKB1R b KQkq e3 0 1";
+    private String beforeFEN2 = "rnb1kbnr/pp3ppp/1q2p3/2ppP3/3P4/3B1N2/PPP2PPP/RNBQK2R b KQkq e3 0 1";
+    private String afterFEN2 = "r1b1kbnr/pp3ppp/1qn1p3/2ppP3/3P4/3B1N2/PPP2PPP/RNBQK2R b KQkq e3 0 1";
 
     public BoardGUI() throws InterruptedException {
         window = new JFrame();
-        window.setSize(800, 600);
+        window.setSize(800, 500);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel pane = new JPanel();
 
@@ -25,39 +32,25 @@ public final class BoardGUI implements ActionListener {
         boardWrapper.setPreferredSize(dimension);
         this.renderBoard();
 
-        JPanel leftCol = new JPanel();
+        leftCol = new JPanel();
+        leftCol.setLayout(new BoxLayout(leftCol, 1));
 
-        JPanel infoPanel = new JPanel();
-        infoPanel.setLayout(new BoxLayout(infoPanel, 1));
-        JPanel lineName = new JPanel();
-        JLabel lineLabel = new JLabel("French Defense, Agincourt Defense");
-        lineName.add(lineLabel);
-        JPanel toMovePane = new JPanel();
-        JLabel toMoveLabel = new JLabel("WHITE TO MOVE");
-        toMovePane.add(toMoveLabel);
-        infoPanel.add(lineName);
-        infoPanel.add(toMovePane);
+        selfRating = new JButton[6];
+        for (int i = 0; i < selfRating.length; i++) {
+            selfRating[i] = new JButton(String.valueOf(i));
+            selfRating[i].addActionListener(this);
+        }
+
+        showAnswer = new JButton("Show Answer");
+        showAnswer.addActionListener(this);
+
+        infoPanel = new JPanel();
+        buttonBox = new JPanel();
         leftCol.add(infoPanel);
-
-        JPanel buttonGroup = new JPanel();
-        JButton showAnswer = new JButton("Show Answer");
-        JPanel arrowGroup = new JPanel();
-        JButton backArrow = new JButton("<");
-        JButton forwardArrow = new JButton(">");
-        arrowGroup.add(backArrow);
-        arrowGroup.add(forwardArrow);
-        JButton nextPos = new JButton("Next Position");
-        buttonGroup.add(showAnswer);
-        buttonGroup.add(arrowGroup);
-        buttonGroup.add(nextPos);
-        leftCol.add(buttonGroup);
-
-
-        JPanel rightCol = new JPanel();
+        leftCol.add(buttonBox);
 
         pane.add(leftCol);
         pane.add(boardWrapper);
-        pane.add(rightCol);
 
         pane.setLayout(new BoxLayout(pane, 0));
 
@@ -66,6 +59,8 @@ public final class BoardGUI implements ActionListener {
         window.setVisible(true);
 
         this.processFen(afterFEN);
+
+        this.promptUser(0);
     }
 
     private void renderBoard() {
@@ -95,6 +90,10 @@ public final class BoardGUI implements ActionListener {
     }
 
     private void processFen(String fen) {
+        for (Square s : squares) {
+            s.removeLabel();
+        }
+
         String[] metaArr = fen.split(" ");
         String[] posArr = metaArr[0].split("/");
 
@@ -163,14 +162,63 @@ public final class BoardGUI implements ActionListener {
 
             // !!! Find way to clone the piece to maintain encapsulation.
             piece = newPiece;
-            piece.setxAxis(panel.getX());
-            piece.setyAxis(panel.getY());
-            window.add(piece);
+
+            try {
+                JLabel squareLabel = new JLabel(String.valueOf(piece.getImage()));
+                Font font = new Font("Arial", Font.BOLD, 35);
+                squareLabel.setFont(font);
+                panel.add(squareLabel);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
         }
+        public void removeLabel() {
+            panel.removeAll();
+        }
+    }
+
+    public void promptUser(int i) {
+        if (i == 0) {
+            this.processFen(beforeFEN);
+        }
+        if (i == 1) {
+            this.processFen(beforeFEN2);
+        }
+        infoPanel.removeAll();
+        JLabel lineName = new JLabel("French Defense, Agincourt Variation");
+        infoPanel.add(lineName);
+
+        buttonBox.removeAll();
+        buttonBox.add(showAnswer);
+
+        leftCol.revalidate();
+        leftCol.repaint();
+    }
+
+    public void showResults() {
+        infoPanel.removeAll();
+        JLabel toMoveLabel = new JLabel("WHITE TO MOVE");
+        infoPanel.add(toMoveLabel);
+
+        buttonBox.removeAll();
+        for (int i = 0; i < selfRating.length; i++) {
+            buttonBox.add(selfRating[i]);
+        }
+        leftCol.revalidate();
+        leftCol.repaint();
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == showAnswer) {
+            this.showResults();
+        }
 
+        for (int i = 0; i < selfRating.length; i++) {
+            if (e.getSource() == selfRating[i]) {
+                System.out.println(i);
+                this.promptUser(i);
+            }
+        }
     }
 }
