@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class Main {
-    public static void main(String[] args) throws ClassNotFoundException {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
 //        try {
 //            new BoardGUI();
 //
@@ -12,5 +12,6 @@ public class Main {
 //            System.out.println(ie.getMessage());
 //        }
         InitDB.makeTables();
+        InitDB.addTestData();
     }
 }

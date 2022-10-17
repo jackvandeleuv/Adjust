@@ -67,4 +67,55 @@ public class InitDB  {
             e.printStackTrace();
         }
     }
+
+    public static void addTestData() throws SQLException, ClassNotFoundException {
+        Class.forName("org.sqlite.JDBC");
+        String jbdcUrl = "jdbc:sqlite:database.db";
+
+        Connection connection = DriverManager.getConnection(jbdcUrl);
+        System.out.println("Successfully connected to DB!");
+        Statement stmt = connection.createStatement();
+
+        stmt.execute("INSERT INTO DECKS (ID, DEFAULT_NAME, CUSTOM_NAME) VALUES(1, 'FRENCH DEFENSE', 'CUSTOM FRENCH')");
+        stmt.execute("INSERT INTO DECKS (ID, DEFAULT_NAME, CUSTOM_NAME) VALUES(2, 'LONDON SYSTEM', 'LONDON OPENING')");
+
+        stmt.execute("INSERT INTO CARDS (ID, DECKS_ID, REP_NUMBER, EASY_FACTOR, IR_INTERVAL) VALUES(1, 1, 0, 2.5, 0)");
+        stmt.execute("INSERT INTO CARDS (ID, DECKS_ID, REP_NUMBER, EASY_FACTOR, IR_INTERVAL) VALUES(2, 1, 0, 2.5, 0)");
+        stmt.execute("INSERT INTO CARDS (ID, DECKS_ID, REP_NUMBER, EASY_FACTOR, IR_INTERVAL) VALUES(3, 1, 0, 2.5, 0)");
+        stmt.execute("INSERT INTO CARDS (ID, DECKS_ID, REP_NUMBER, EASY_FACTOR, IR_INTERVAL) VALUES(4, 1, 0, 2.5, 0)");
+        stmt.execute("INSERT INTO CARDS (ID, DECKS_ID, REP_NUMBER, EASY_FACTOR, IR_INTERVAL) VALUES(5, 1, 0, 2.5, 0)");
+        stmt.execute("INSERT INTO CARDS (ID, DECKS_ID, REP_NUMBER, EASY_FACTOR, IR_INTERVAL) VALUES(6, 2, 0, 2.5, 0)");
+        stmt.execute("INSERT INTO CARDS (ID, DECKS_ID, REP_NUMBER, EASY_FACTOR, IR_INTERVAL) VALUES(7, 2, 0, 2.5, 0)");
+        stmt.execute("INSERT INTO CARDS (ID, DECKS_ID, REP_NUMBER, EASY_FACTOR, IR_INTERVAL) VALUES(8, 2, 0, 2.5, 0)");
+        stmt.execute("INSERT INTO CARDS (ID, DECKS_ID, REP_NUMBER, EASY_FACTOR, IR_INTERVAL) VALUES(9, 2, 0, 2.5, 0)");
+        stmt.execute("INSERT INTO CARDS (ID, DECKS_ID, REP_NUMBER, EASY_FACTOR, IR_INTERVAL) VALUES(10, 2, 0, 2.5, 0)");
+
+        stmt.execute("INSERT INTO CARDS_TO_MOVES (CARDS_ID, MOVES_ID) VALUES(1, 1)");
+        stmt.execute("INSERT INTO CARDS_TO_MOVES (CARDS_ID, MOVES_ID) VALUES(2, 2)");
+        stmt.execute("INSERT INTO CARDS_TO_MOVES (CARDS_ID, MOVES_ID) VALUES(3, 3)");
+        stmt.execute("INSERT INTO CARDS_TO_MOVES (CARDS_ID, MOVES_ID) VALUES(4, 4)");
+        stmt.execute("INSERT INTO CARDS_TO_MOVES (CARDS_ID, MOVES_ID) VALUES(5, 5)");
+        stmt.execute("INSERT INTO CARDS_TO_MOVES (CARDS_ID, MOVES_ID) VALUES(6, 6)");
+        stmt.execute("INSERT INTO CARDS_TO_MOVES (CARDS_ID, MOVES_ID) VALUES(7, 7)");
+        stmt.execute("INSERT INTO CARDS_TO_MOVES (CARDS_ID, MOVES_ID) VALUES(8, 8)");
+        stmt.execute("INSERT INTO CARDS_TO_MOVES (CARDS_ID, MOVES_ID) VALUES(9, 9)");
+        stmt.execute("INSERT INTO CARDS_TO_MOVES (CARDS_ID, MOVES_ID) VALUES(10, 10)");
+
+        stmt.execute("INSERT INTO OPENINGS (ID, NAME, LINE) VALUES(1, 'FRENCH DEFENSE', 'AGINCOURT VARIATION')");
+        stmt.execute("INSERT INTO OPENINGS (ID, NAME, LINE) VALUES(2, 'LONDON SYSTEM', 'BOTEZ GAMBIT')");
+
+        stmt.execute("INSERT INTO MOVES (ID, OPENING_ID, ORDER_IN_LINE, BEFORE_FEN, AFTER_FEN) VALUES(1, 1, 2, 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1', 'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1')");
+        stmt.execute("INSERT INTO MOVES (ID, OPENING_ID, ORDER_IN_LINE, BEFORE_FEN, AFTER_FEN) VALUES(2, 1, 4, 'rnbqkbnr/pppp1ppp/4p3/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 1', 'rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq d6 0 1')");
+        stmt.execute("INSERT INTO MOVES (ID, OPENING_ID, ORDER_IN_LINE, BEFORE_FEN, AFTER_FEN) VALUES(3, 1, 6, 'rnbqkbnr/ppp2ppp/4p3/3pP3/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 1', 'rnbqkbnr/pp3ppp/4p3/2ppP3/3P4/8/PPP2PPP/RNBQKBNR w KQkq c6 0 1')");
+        stmt.execute("INSERT INTO MOVES (ID, OPENING_ID, ORDER_IN_LINE, BEFORE_FEN, AFTER_FEN) VALUES(4, 1, 4, 'rnbqkbnr/pppp1ppp/4p3/8/3P4/4P3/PPP2PPP/RNBQKBNR b KQkq - 0 1', 'rnbqkbnr/ppp2ppp/4p3/3p4/3P4/4P3/PPP2PPP/RNBQKBNR w KQkq d6 0 1')");
+        stmt.execute("INSERT INTO MOVES (ID, OPENING_ID, ORDER_IN_LINE, BEFORE_FEN, AFTER_FEN) VALUES(5, 1, 6, 'rnbqkbnr/ppp2ppp/4p3/3pP3/8/3P4/PPP2PPP/RNBQKBNR b KQkq - 0 1', 'rnbqkbnr/pp3ppp/4p3/2ppP3/8/3P4/PPP2PPP/RNBQKBNR w KQkq c6 0 1')");
+        stmt.execute("INSERT INTO MOVES (ID, OPENING_ID, ORDER_IN_LINE, BEFORE_FEN, AFTER_FEN) VALUES(6, 2, 3, 'rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 1', 'rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 0 1')");
+        stmt.execute("INSERT INTO MOVES (ID, OPENING_ID, ORDER_IN_LINE, BEFORE_FEN, AFTER_FEN) VALUES(7, 2, 5, 'rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 0 1', 'rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 1')");
+        stmt.execute("INSERT INTO MOVES (ID, OPENING_ID, ORDER_IN_LINE, BEFORE_FEN, AFTER_FEN) VALUES(8, 2, 7, 'r1bqkb1r/ppp1pppp/2n2n2/3p4/3P1B2/4P3/PPP2PPP/RN1QKBNR b KQkq - 0 1', 'r1bqkb1r/ppp1pppp/2n2n2/3p4/3P1B2/2P1P3/PP3PPP/RN1QKBNR b KQkq - 0 1')");
+        stmt.execute("INSERT INTO MOVES (ID, OPENING_ID, ORDER_IN_LINE, BEFORE_FEN, AFTER_FEN) VALUES(9, 2, 5, 'rn1qkbnr/ppp1pppp/8/3p1b2/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 0 1', 'rn1qkbnr/ppp1pppp/8/3p1b2/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1')");
+        stmt.execute("INSERT INTO MOVES (ID, OPENING_ID, ORDER_IN_LINE, BEFORE_FEN, AFTER_FEN) VALUES(10, 2, 7, 'rn1qkbnr/pp2pppp/2p5/3p1b2/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 0 1', 'rn1qkbnr/pp2pppp/2p5/3p1b2/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 1')");
+
+        stmt.close();
+        System.out.println("Connection closed!");
+    }
 }
