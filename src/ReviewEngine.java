@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 public final class ReviewEngine {
-    public static Map<Integer, List<String>> getNextCard(int deckId) throws SQLException, ClassNotFoundException {
-        Map<Integer, List<String>> resultMap = new HashMap<Integer, List<String>>();
-
+    public ReviewCard getNextCard(int deckId) throws SQLException, ClassNotFoundException {
         Class.forName("org.sqlite.JDBC");
         String jbdcUrl = "jdbc:sqlite:database.db";
         Connection connection = DriverManager.getConnection(jbdcUrl);
@@ -20,9 +18,8 @@ public final class ReviewEngine {
         query.append("JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID ");
         query.append("JOIN OPENINGS ON MOVES.OPENINGS_ID = OPENINGS.ID ");
         query.append("WHERE CARDS.DECKS_ID = ? ");
-        query.append("AND ((? - CARDS.LAST_REVIEW) / 86400000) < CARDS.IR_INTERVAL ");
+        query.append("AND ((? - CARDS.LAST_REVIEW) / 86400000) > CARDS.IR_INTERVAL ");
         query.append("LIMIT 1 ");
-
 
         long currentTime = System.currentTimeMillis();
         PreparedStatement preStmt = connection.prepareStatement(query.toString());
@@ -36,26 +33,127 @@ public final class ReviewEngine {
         String line = rs.getString("LINE");
         String beforeFEN = rs.getString("BEFORE_FEN");
         String afterFEN = rs.getString("AFTER_FEN");
-        List<String> strResults = new ArrayList<String>();
-        strResults.add(name);
-        strResults.add(line);
-        strResults.add(beforeFEN);
-        strResults.add(afterFEN);
-        resultMap.put(id, strResults);
+        System.out.println(id);
+        System.out.println(name);
+        System.out.println(line);
+        System.out.println(beforeFEN);
+        System.out.println(afterFEN);
 
         rs.close();
         preStmt.close();
         connection.commit();
         System.out.println("Connection closed!");
 
-        return resultMap;
+        if (name != null && line != null && beforeFEN != null && afterFEN != null) {
+            return new ReviewCard(id, name, line, beforeFEN, afterFEN);
+        } else {
+            return new ReviewCard(-1, "", "", "", "");
+        }
     }
 
-    public static void updateCard() {
+    public void updateCard(int grade, int cardId) throws SQLException, ClassNotFoundException {
+        Class.forName("org.sqlite.JDBC");
+        String jbdcUrl = "jdbc:sqlite:database.db";
+        Connection connection = DriverManager.getConnection(jbdcUrl);
+        connection.setAutoCommit(false);
+        System.out.println("Successfully connected to DB!");
 
+        String query = "SELECT REP_NUMBER, EASY_FACTOR, IR_INTERVAL FROM CARDS WHERE ID = ?";
+        PreparedStatement preStmt = connection.prepareStatement(query);
+        preStmt.setInt(1, cardId);
+
+        ResultSet rs = preStmt.executeQuery();
+
+        int repNum = rs.getInt("REP_NUMBER");
+        long interval = rs.getLong("IR_INTERVAL");
+        double easFactor = rs.getDouble("EASY_FACTOR");
+
+        rs.close();
+        preStmt.close();
+
+        double[] memoResult = this.superMemoAlgo(grade, repNum, easFactor, interval);
+        StringBuilder query2 = new StringBuilder();
+        query2.append("UPDATE CARDS ");
+        query2.append("SET REP_NUMBER = ?, ");
+        query2.append("EASY_FACTOR = ?, ");
+        query2.append("IR_INTERVAL = ?, ");
+        query2.append("LAST_REVIEW = ? ");
+        query2.append("WHERE ID = ? ");
+
+        PreparedStatement preStmt2 = connection.prepareStatement(query2.toString());
+        long currentTime = System.currentTimeMillis();
+        preStmt2.setDouble(1, memoResult[0]);
+        preStmt2.setDouble(2, memoResult[1]);
+        preStmt2.setDouble(3, memoResult[2]);
+        preStmt2.setLong(4, currentTime);
+        preStmt2.setInt(5, cardId);
+
+        System.out.println(repNum);
+        System.out.println(easFactor);
+        System.out.println(interval);
+        System.out.println(cardId);
+
+        preStmt2.executeUpdate();
+
+        connection.commit();
+        System.out.println("Connection closed!");
     }
 
-    private static double[] superMemoAlgo(int grade, int repNum, double easFactor, int interval) {
+    private double[] superMemoAlgo(int grade, int repNum, double easFactor, long interval) {
+        if (grade >= 3) {
+            if (repNum == 0) {
+                interval = 1;
+            } else if (repNum == 1) {
+                interval = 6;
+            } else {
+                interval = Math.round(interval * easFactor);
+            }
+            repNum = repNum + 1;
+        } else {
+            repNum = 0;
+            interval = 1;
+        }
+        easFactor = easFactor + (.1 - (5 - grade) * (.08 + (5 - grade) * .02));
+        if (easFactor < 1.3) {
+            easFactor = 1.3;
+        }
+        double[] resultArr = {repNum, easFactor, interval};
+        return resultArr;
+    }
 
+    public final class ReviewCard {
+        private final int id;
+        private final String name;
+        private final String line;
+        private final String beforeFEN;
+        private final String afterFEN;
+
+        ReviewCard(int newId, String newName, String newLine, String newBeforeFEN, String newAfterFEN) {
+            id = newId;
+            name = newName;
+            line = newLine;
+            beforeFEN = newBeforeFEN;
+            afterFEN = newAfterFEN;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getLine() {
+            return line;
+        }
+
+        public String getBeforeFEN() {
+            return beforeFEN;
+        }
+
+        public String getAfterFEN() {
+            return afterFEN;
+        }
     }
 }

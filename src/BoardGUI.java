@@ -1,11 +1,14 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import javax.swing.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.util.*;
+import java.util.List;
 
 public final class BoardGUI implements ActionListener {
+
+    private final ReviewEngine revEng;
     private final JFrame window;
     private final JPanel boardWrapper;
     private final JButton[] selfRating;
@@ -14,12 +17,26 @@ public final class BoardGUI implements ActionListener {
     private final JPanel leftCol;
     private final JPanel buttonBox;
     private Square[] squares;
-    private String beforeFEN = "rnbqkbnr/pp3ppp/4p3/2ppP3/3P4/8/PPP2PPP/RNBQKBNR b KQkq e3 0 1";
-    private String afterFEN = "rnbqkbnr/pp3ppp/4p3/2ppP3/3P4/5N2/PPP2PPP/RNBQKB1R b KQkq e3 0 1";
-    private String beforeFEN2 = "rnb1kbnr/pp3ppp/1q2p3/2ppP3/3P4/3B1N2/PPP2PPP/RNBQK2R b KQkq e3 0 1";
-    private String afterFEN2 = "r1b1kbnr/pp3ppp/1qn1p3/2ppP3/3P4/3B1N2/PPP2PPP/RNBQK2R b KQkq e3 0 1";
+    private String lineNameMain;
+    private String lineNameVariation;
 
-    public BoardGUI() throws InterruptedException {
+    private String beforeFEN;
+    private String afterFEN;
+
+    private JPanel arrowBox;
+
+    private JButton leftArrow;
+
+    private JButton rightArrow;
+
+    private int currentCardId;
+
+    private int currentDeckId;
+
+    public BoardGUI(int newCurrentDeckId) throws InterruptedException {
+        revEng = new ReviewEngine();
+        currentDeckId = newCurrentDeckId;
+
         window = new JFrame();
         window.setSize(800, 500);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -44,7 +61,16 @@ public final class BoardGUI implements ActionListener {
         showAnswer = new JButton("Show Answer");
         showAnswer.addActionListener(this);
 
+//        arrowBox = new JPanel();
+        rightArrow = new JButton(">");
+        rightArrow.addActionListener(this);
+        leftArrow = new JButton("<");
+        leftArrow.addActionListener(this);
+//        arrowBox.add(rightArrow);
+//        arrowBox.add(leftArrow);
+
         infoPanel = new JPanel();
+        arrowBox = new JPanel();
         buttonBox = new JPanel();
         leftCol.add(infoPanel);
         leftCol.add(buttonBox);
@@ -52,15 +78,13 @@ public final class BoardGUI implements ActionListener {
         pane.add(leftCol);
         pane.add(boardWrapper);
 
-        pane.setLayout(new BoxLayout(pane, 0));
+        pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
 
         window.add(pane);
 
         window.setVisible(true);
 
-        this.processFen(afterFEN);
-
-        this.promptUser(0);
+        this.promptUser(currentDeckId);
     }
 
     private void renderBoard() {
@@ -89,7 +113,7 @@ public final class BoardGUI implements ActionListener {
         }
     }
 
-    private void processFen(String fen) {
+    private void paintFEN(String fen) {
         for (Square s : squares) {
             s.removeLabel();
         }
@@ -114,6 +138,8 @@ public final class BoardGUI implements ActionListener {
                 squareNum = squareNum + 1;
             }
         }
+        boardWrapper.revalidate();
+        boardWrapper.repaint();
     }
 
     private Piece charToPiece(char c, int newPos) {
@@ -177,16 +203,28 @@ public final class BoardGUI implements ActionListener {
         }
     }
 
-    public void promptUser(int i) {
-        if (i == 0) {
-            this.processFen(beforeFEN);
+    public void promptUser(int deckId) {
+        try {
+            ReviewEngine.ReviewCard revCard = revEng.getNextCard(deckId);
+
+            if (revCard.getId() == -1) {
+                return;
+            }
+
+            currentCardId = revCard.getId();
+            beforeFEN = revCard.getBeforeFEN();
+            afterFEN = revCard.getAfterFEN();
+            lineNameMain = revCard.getName();
+            lineNameVariation = revCard.getLine();
+        } catch (SQLException | ClassNotFoundException ex) {
+            System.out.println(ex.getMessage());
         }
-        if (i == 1) {
-            this.processFen(beforeFEN2);
-        }
+
+        this.paintFEN(beforeFEN);
+
         infoPanel.removeAll();
-        JLabel lineName = new JLabel("French Defense, Agincourt Variation");
-        infoPanel.add(lineName);
+        JLabel toMoveLabel = new JLabel("WHITE TO MOVE");
+        infoPanel.add(toMoveLabel);
 
         buttonBox.removeAll();
         buttonBox.add(showAnswer);
@@ -196,11 +234,19 @@ public final class BoardGUI implements ActionListener {
     }
 
     public void showResults() {
+        this.paintFEN(afterFEN);
+
         infoPanel.removeAll();
-        JLabel toMoveLabel = new JLabel("WHITE TO MOVE");
-        infoPanel.add(toMoveLabel);
+        StringBuilder lineName = new StringBuilder();
+        lineName.append(lineNameMain);
+        lineName.append(" ");
+        lineName.append(lineNameVariation);
+        JLabel lineLabel = new JLabel(lineName.toString());
+        infoPanel.add(lineLabel);
 
         buttonBox.removeAll();
+        buttonBox.add(leftArrow);
+        buttonBox.add(rightArrow);
         for (int i = 0; i < selfRating.length; i++) {
             buttonBox.add(selfRating[i]);
         }
@@ -214,10 +260,23 @@ public final class BoardGUI implements ActionListener {
             this.showResults();
         }
 
+        if (e.getSource() == rightArrow) {
+            this.paintFEN(afterFEN);
+        }
+
+        if (e.getSource() == leftArrow) {
+            this.paintFEN(beforeFEN);
+        }
+
         for (int i = 0; i < selfRating.length; i++) {
             if (e.getSource() == selfRating[i]) {
-                System.out.println(i);
-                this.promptUser(i);
+                try {
+                    revEng.updateCard(i + 1, currentCardId);
+                } catch (SQLException | ClassNotFoundException ex) {
+                    System.out.println(ex.getMessage());
+                }
+
+                this.promptUser(currentDeckId);
             }
         }
     }
