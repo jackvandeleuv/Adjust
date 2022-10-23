@@ -9,7 +9,6 @@ import java.util.List;
 public final class BoardGUI implements ActionListener {
 
     private final ReviewEngine revEng;
-    private final JFrame window;
     private final JPanel boardWrapper;
     private final JButton[] selfRating;
     private final JButton showAnswer;
@@ -33,13 +32,10 @@ public final class BoardGUI implements ActionListener {
 
     private int currentDeckId;
 
-    public BoardGUI(int newCurrentDeckId) throws InterruptedException {
+    public BoardGUI(int newCurrentDeckId, JFrame window) throws InterruptedException {
         revEng = new ReviewEngine();
         currentDeckId = newCurrentDeckId;
 
-        window = new JFrame();
-        window.setSize(800, 500);
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel pane = new JPanel();
 
         boardWrapper = new JPanel();

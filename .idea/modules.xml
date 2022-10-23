@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/AnkiChess.iml" filepath="$PROJECT_DIR$/AnkiChess.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Adjust.iml" filepath="$PROJECT_DIR$/Adjust.iml" />
     </modules>
   </component>
 </project>

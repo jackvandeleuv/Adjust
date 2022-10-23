@@ -18,7 +18,7 @@ public final class ReviewEngine {
         query.append("JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID ");
         query.append("JOIN OPENINGS ON MOVES.OPENINGS_ID = OPENINGS.ID ");
         query.append("WHERE CARDS.DECKS_ID = ? ");
-        query.append("AND ((? - CARDS.LAST_REVIEW) / 86400000) > CARDS.IR_INTERVAL ");
+        query.append("AND (? - CARDS.LAST_REVIEW) > (CARDS.IR_INTERVAL * 86400000) ");
         query.append("LIMIT 1 ");
 
         long currentTime = System.currentTimeMillis();
@@ -33,11 +33,11 @@ public final class ReviewEngine {
         String line = rs.getString("LINE");
         String beforeFEN = rs.getString("BEFORE_FEN");
         String afterFEN = rs.getString("AFTER_FEN");
-        System.out.println(id);
-        System.out.println(name);
-        System.out.println(line);
-        System.out.println(beforeFEN);
-        System.out.println(afterFEN);
+//        System.out.println(id);
+//        System.out.println(name);
+//        System.out.println(line);
+//        System.out.println(beforeFEN);
+//        System.out.println(afterFEN);
 
         rs.close();
         preStmt.close();
@@ -54,12 +54,11 @@ public final class ReviewEngine {
     public void updateCard(int grade, int cardId) throws SQLException, ClassNotFoundException {
         Class.forName("org.sqlite.JDBC");
         String jbdcUrl = "jdbc:sqlite:database.db";
-        Connection connection = DriverManager.getConnection(jbdcUrl);
-        connection.setAutoCommit(false);
+        Connection conn = DriverManager.getConnection(jbdcUrl);
         System.out.println("Successfully connected to DB!");
 
         String query = "SELECT REP_NUMBER, EASY_FACTOR, IR_INTERVAL FROM CARDS WHERE ID = ?";
-        PreparedStatement preStmt = connection.prepareStatement(query);
+        PreparedStatement preStmt = conn.prepareStatement(query);
         preStmt.setInt(1, cardId);
 
         ResultSet rs = preStmt.executeQuery();
@@ -72,6 +71,13 @@ public final class ReviewEngine {
         preStmt.close();
 
         double[] memoResult = this.superMemoAlgo(grade, repNum, easFactor, interval);
+
+        System.out.println(cardId);
+        for (double d : memoResult) {
+            System.out.println(d);
+        }
+        System.out.println("\n");
+
         StringBuilder query2 = new StringBuilder();
         query2.append("UPDATE CARDS ");
         query2.append("SET REP_NUMBER = ?, ");
@@ -80,7 +86,7 @@ public final class ReviewEngine {
         query2.append("LAST_REVIEW = ? ");
         query2.append("WHERE ID = ? ");
 
-        PreparedStatement preStmt2 = connection.prepareStatement(query2.toString());
+        PreparedStatement preStmt2 = conn.prepareStatement(query2.toString());
         long currentTime = System.currentTimeMillis();
         preStmt2.setDouble(1, memoResult[0]);
         preStmt2.setDouble(2, memoResult[1]);
@@ -88,14 +94,13 @@ public final class ReviewEngine {
         preStmt2.setLong(4, currentTime);
         preStmt2.setInt(5, cardId);
 
-        System.out.println(repNum);
-        System.out.println(easFactor);
-        System.out.println(interval);
-        System.out.println(cardId);
+//        System.out.println(repNum);
+//        System.out.println(easFactor);
+//        System.out.println(interval);
+//        System.out.println(cardId);
 
         preStmt2.executeUpdate();
 
-        connection.commit();
         System.out.println("Connection closed!");
     }
 
