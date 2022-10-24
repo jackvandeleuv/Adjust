@@ -7,7 +7,6 @@ import java.util.*;
 import java.util.List;
 
 public final class BoardGUI implements ActionListener {
-
     private final ReviewEngine revEng;
     private final JPanel boardWrapper;
     private final JButton[] selfRating;
@@ -18,18 +17,11 @@ public final class BoardGUI implements ActionListener {
     private Square[] squares;
     private String lineNameMain;
     private String lineNameVariation;
-
     private String beforeFEN;
     private String afterFEN;
-
-    private JPanel arrowBox;
-
     private JButton leftArrow;
-
     private JButton rightArrow;
-
     private int currentCardId;
-
     private int currentDeckId;
 
     public BoardGUI(int newCurrentDeckId, JFrame window) throws InterruptedException {
@@ -57,16 +49,12 @@ public final class BoardGUI implements ActionListener {
         showAnswer = new JButton("Show Answer");
         showAnswer.addActionListener(this);
 
-//        arrowBox = new JPanel();
         rightArrow = new JButton(">");
         rightArrow.addActionListener(this);
         leftArrow = new JButton("<");
         leftArrow.addActionListener(this);
-//        arrowBox.add(rightArrow);
-//        arrowBox.add(leftArrow);
 
         infoPanel = new JPanel();
-        arrowBox = new JPanel();
         buttonBox = new JPanel();
         leftCol.add(infoPanel);
         leftCol.add(buttonBox);
@@ -110,8 +98,8 @@ public final class BoardGUI implements ActionListener {
     }
 
     private void paintFEN(String fen) {
-        for (Square s : squares) {
-            s.removeLabel();
+        for (Square sq : squares) {
+            sq.removeLabel();
         }
 
         String[] metaArr = fen.split(" ");
@@ -123,8 +111,8 @@ public final class BoardGUI implements ActionListener {
                 char currentChar = row.charAt(chIndex);
 
                 if (!Character.isDigit(currentChar)) {
-                    Square s = squares[squareNum];
-                    s.setPiece(this.charToPiece(currentChar, squareNum));
+                    Square sq = squares[squareNum];
+                    sq.setPiece(this.charToPiece(currentChar, squareNum));
                 }
 
                 if (Character.isDigit(currentChar)) {
@@ -186,10 +174,12 @@ public final class BoardGUI implements ActionListener {
             piece = newPiece;
 
             try {
-                JLabel squareLabel = new JLabel(String.valueOf(piece.getImage()));
-                Font font = new Font("Arial", Font.BOLD, 35);
-                squareLabel.setFont(font);
-                panel.add(squareLabel);
+                ImageIcon image = piece.getImage();
+                Image temp = image.getImage();
+                Image temp2 = temp.getScaledInstance(panel.getWidth(), panel.getHeight(), Image.SCALE_SMOOTH);
+                ImageIcon image2 = new ImageIcon(temp2);
+                JLabel label = new JLabel(image2, JLabel.CENTER);
+                panel.add(label);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }

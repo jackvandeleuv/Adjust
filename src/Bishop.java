@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 
 public final class Bishop extends Piece {
-
     public Bishop(int newPos, char newTeam) {
         super(newPos, newTeam);
     }
@@ -16,14 +15,14 @@ public final class Bishop extends Piece {
     }
 
     @Override
-    public char getImage() throws Exception {
+    public ImageIcon getImage() throws Exception {
         if (super.getTeam() == 'w') {
-//            return ImageIO.read(new File("img/Chess_blt45.svg.png"));
-            return 'B';
+            ImageIcon image = new ImageIcon("img/Chess_blt45.svg.png");
+            return image;
         }
         if (super.getTeam() == 'b') {
-//            return ImageIO.read(new File("img/Chess_bdt45.svg.png"));
-            return 'b';
+            ImageIcon image = new ImageIcon("img/Chess_bdt45.svg.png");
+            return image;
         }
         throw new Exception("This piece has no color/team!");
     }

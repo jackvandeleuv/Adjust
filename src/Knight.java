@@ -1,5 +1,6 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -16,16 +17,14 @@ public final class Knight extends Piece {
     }
 
     @Override
-    public char getImage() throws Exception {
+    public ImageIcon getImage() throws Exception {
         if (super.getTeam() == 'w') {
-//            BufferedImage image = ImageIO.read(new File("img/Chess_nlt45.svg.png"));
-//            return image;
-            return 'K';
+            ImageIcon image = new ImageIcon("img/Chess_nlt45.svg.png");
+            return image;
         }
         if (super.getTeam() == 'b') {
-//            BufferedImage image = ImageIO.read(new File("img/Chess_ndt45.svg.png"));
-//            return image;
-            return 'k';
+            ImageIcon image = new ImageIcon("img/Chess_ndt45.svg.png");
+            return image;
         }
         throw new Exception("This piece has no color/team!");
     }

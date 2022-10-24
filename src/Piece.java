@@ -37,7 +37,7 @@ public abstract class Piece {
 
     public abstract int getValidDestinations();
 
-    public abstract char getImage() throws Exception;
+    public abstract ImageIcon getImage() throws Exception;
 
 //    @Override
 //    public void paintComponent(Graphics g) {
