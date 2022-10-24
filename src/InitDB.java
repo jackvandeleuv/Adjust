@@ -33,8 +33,7 @@ public final class InitDB  {
             StringBuilder decksQ = new StringBuilder();
             decksQ.append("CREATE TABLE IF NOT EXISTS DECKS(");
             decksQ.append("ID INTEGER PRIMARY KEY,");
-            decksQ.append("DEFAULT_NAME TEXT,");
-            decksQ.append("CUSTOM_NAME TEXT)");
+            decksQ.append("NAME TEXT)");
             stmt.execute(decksQ.toString());
 
             stmt.execute("DROP TABLE IF EXISTS CARDS");
@@ -75,8 +74,8 @@ public final class InitDB  {
         System.out.println("Successfully connected to DB!");
         Statement stmt = connection.createStatement();
 
-        stmt.execute("INSERT INTO DECKS (ID, DEFAULT_NAME, CUSTOM_NAME) VALUES(1, 'FRENCH DEFENSE', 'CUSTOM FRENCH')");
-        stmt.execute("INSERT INTO DECKS (ID, DEFAULT_NAME, CUSTOM_NAME) VALUES(2, 'LONDON SYSTEM', 'LONDON OPENING')");
+        stmt.execute("INSERT INTO DECKS (ID, NAME) VALUES(1, 'MY FRENCH DEFENSE')");
+        stmt.execute("INSERT INTO DECKS (ID, NAME) VALUES(2, 'MY LONDON SYSTEM')");
 
         stmt.execute("INSERT INTO CARDS (ID, DECKS_ID, REP_NUMBER, EASY_FACTOR, IR_INTERVAL, LAST_REVIEW) VALUES(1, 1, 0, 2.5, 1, 1666027078524)");
         stmt.execute("INSERT INTO CARDS (ID, DECKS_ID, REP_NUMBER, EASY_FACTOR, IR_INTERVAL, LAST_REVIEW) VALUES(2, 1, 0, 2.5, 2, 1665940678524)");

@@ -10,8 +10,7 @@ public final class QueryDB {
     public DeckSummary getDecksSummary() throws ClassNotFoundException, SQLException {
 
         StringBuilder query = new StringBuilder();
-        // It might be possible to COALESCE the default names into the custom names?
-        query.append("SELECT DECKS.CUSTOM_NAME, COUNT(CARDS.ID) FROM DECKS ");
+        query.append("SELECT DECKS.NAME, COUNT(CARDS.ID) FROM DECKS ");
         query.append("JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID ");
         query.append("WHERE (? - CARDS.LAST_REVIEW) > (CARDS.IR_INTERVAL * 86400000) ");
         query.append("GROUP BY DECKS.ID ");
