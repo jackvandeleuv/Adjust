@@ -13,10 +13,10 @@ public final class ReviewEngine {
         System.out.println("Successfully connected to DB!");
 
         StringBuilder query = new StringBuilder();
-        query.append("SELECT CARDS.ID, OPENINGS.NAME, OPENINGS.LINE, MOVES.BEFORE_FEN, MOVES.AFTER_FEN ");
+        query.append("SELECT CARDS.ID, LINES.NAME, LINES.LINE, MOVES.BEFORE_FEN, MOVES.AFTER_FEN ");
         query.append("FROM CARDS JOIN CARDS_TO_MOVES ON CARDS.ID = CARDS_TO_MOVES.CARDS_ID ");
         query.append("JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID ");
-        query.append("JOIN OPENINGS ON MOVES.OPENINGS_ID = OPENINGS.ID ");
+        query.append("JOIN LINES ON MOVES.LINES_ID = LINES.ID ");
         query.append("WHERE CARDS.DECKS_ID = ? ");
         query.append("AND (? - CARDS.LAST_REVIEW) > (CARDS.IR_INTERVAL * 86400000) ");
         query.append("LIMIT 1 ");
