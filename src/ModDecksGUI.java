@@ -2,9 +2,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public final class ModDecksGUI implements ActionListener {
     private JList<String> deckList;
@@ -48,7 +46,7 @@ public final class ModDecksGUI implements ActionListener {
         pane.repaint();
     }
 
-    public void makeDeckList() throws SQLException, ClassNotFoundException {
+    private void makeDeckList() throws SQLException, ClassNotFoundException {
         QueryDB queryDB = new QueryDB();
         QueryDB.DeckSummary deckSummary = queryDB.getDecksSummary();
         List<String> names = deckSummary.getNameList();
@@ -77,14 +75,8 @@ public final class ModDecksGUI implements ActionListener {
         }
     }
 
-    public void createDeck() throws ClassNotFoundException, SQLException {
-        Class.forName("org.sqlite.JDBC");
-        String jbdcUrl = "jdbc:sqlite:database.db";
-        Connection conn = DriverManager.getConnection(jbdcUrl);
-        PreparedStatement deleteStmt = conn.prepareStatement("INSERT INTO DECKS(ID, NAME) VALUES()");
-    }
 
-    public void deleteDeck(int pk) throws ClassNotFoundException, SQLException {
+    private void deleteDeck(int pk) throws ClassNotFoundException, SQLException {
         Class.forName("org.sqlite.JDBC");
         String jbdcUrl = "jdbc:sqlite:database.db";
         Connection conn = DriverManager.getConnection(jbdcUrl);
@@ -93,8 +85,6 @@ public final class ModDecksGUI implements ActionListener {
         deleteStmt.executeUpdate();
         conn.close();
         this.makeDeckList();
-        pane.revalidate();
-        pane.repaint();
     }
 
     @Override
@@ -107,6 +97,13 @@ public final class ModDecksGUI implements ActionListener {
             } catch (ClassNotFoundException | SQLException ex) {
                 throw new RuntimeException(ex);
             }
+            pane.revalidate();
+            pane.repaint();
+        }
+
+        // Make a new thread to prevent freezing!
+        if (e.getSource() == createBtn) {
+            new CreateDeckGUI(pane);
         }
     }
 }
