@@ -17,7 +17,7 @@ public final class QueryDB {
         toReviewQ.append("ORDER BY DECKS.NAME DESC ");
 
         StringBuilder cardTotalsQ = new StringBuilder();
-        cardTotalsQ.append("SELECT COUNT(CARDS.ID) ");
+        cardTotalsQ.append("SELECT COUNT(CARDS.ID), DECKS.ID ");
         cardTotalsQ.append("FROM CARDS JOIN DECKS ON CARDS.DECKS_ID = DECKS.ID ");
         cardTotalsQ.append("GROUP BY DECKS.ID ");
         cardTotalsQ.append("ORDER BY DECKS.NAME DESC ");
@@ -36,6 +36,7 @@ public final class QueryDB {
         List<String> nameList = new ArrayList<String>();
         List<Integer> reviewCount = new ArrayList<Integer>();
         List<Integer> cardTotals = new ArrayList<Integer>();
+        List<Integer> deckPKs = new ArrayList<Integer>();
 
         while (rs1.next()) {
             nameList.add(rs1.getString(1));
@@ -44,20 +45,23 @@ public final class QueryDB {
 
         while (rs2.next()) {
             cardTotals.add(rs2.getInt(1));
+            deckPKs.add(rs2.getInt(2));
         }
 
-        return new DeckSummary(nameList, reviewCount, cardTotals);
+        return new DeckSummary(nameList, reviewCount, cardTotals, deckPKs);
     }
 
     public final class DeckSummary {
         private final List<String> nameList;
         private final List<Integer> reviewCounts;
-
         private final List<Integer> cardTotals;
-        public DeckSummary(List<String> newNameList, List<Integer> newReviewCounts, List<Integer> newCardTotals) {
+        private final List<Integer> deckPKs;
+
+        public DeckSummary(List<String> newNameList, List<Integer> newReviewCounts, List<Integer> newCardTotals, List<Integer> newDeckPKs) {
             nameList = newNameList;
             reviewCounts = newReviewCounts;
             cardTotals = newCardTotals;
+            deckPKs = newDeckPKs;
         }
 
         public List<String> getNameList() {
@@ -70,6 +74,10 @@ public final class QueryDB {
 
         public List<Integer> getCardTotals() {
             return cardTotals;
+        }
+
+        public List<Integer> getDeckPKs() {
+            return deckPKs;
         }
     }
 }

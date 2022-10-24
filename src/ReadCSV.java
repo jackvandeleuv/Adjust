@@ -18,7 +18,6 @@ public class ReadCSV {
         while (sc.hasNextLine()) {
             String csvLine = sc.nextLine();
             if (!csvLine.isEmpty()) {
-                System.out.println(csvLine);
                 String[] lineArr = csvLine.split(",");
                 preStmt.setInt(1, Integer.valueOf(lineArr[0]));
                 preStmt.setString(2, lineArr[1].strip());
@@ -29,7 +28,7 @@ public class ReadCSV {
 
         }
         sc.close();
-
+        System.out.println("make lines finished");
         conn.close();
     }
 
@@ -44,7 +43,6 @@ public class ReadCSV {
         while (sc.hasNextLine()) {
             String csvLine = sc.nextLine();
             if (!csvLine.isEmpty()) {
-                System.out.println(csvLine);
                 String[] lineArr = csvLine.split(",");
                 preStmt.setInt(1, Integer.valueOf(lineArr[0]));
                 preStmt.setInt(2, Integer.valueOf(lineArr[1]));
@@ -56,6 +54,7 @@ public class ReadCSV {
 
         }
         sc.close();
+        System.out.println("make moves finished");
 
         conn.close();
     }
