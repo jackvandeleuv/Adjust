@@ -31,7 +31,7 @@ public class Main {
         window.setJMenuBar(menuBar);
         window.setVisible(true);
 
-        new ModDecksGUI(pane);
+        new AddLinesGUI(pane);
 
     }
 }
