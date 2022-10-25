@@ -124,15 +124,20 @@ public final class ModDecksGUI implements ActionListener {
 
 
     private synchronized void deleteDeck(int deckPK) throws ClassNotFoundException, SQLException {
-        synchronized (conn) {
-            PreparedStatement deleteDeck = conn.prepareStatement("DELETE FROM DECKS WHERE ID = ?");
-            deleteDeck.setInt(1, deckPK);
-            deleteDeck.executeUpdate();
-            PreparedStatement deleteCards = conn.prepareStatement("DELETE FROM CARDS WHERE DECKS_ID = ?");
-            deleteCards.setInt(1, deckPK);
-            deleteCards.executeUpdate();
-            conn.commit();
-        }
+        PreparedStatement deleteDeck = conn.prepareStatement("DELETE FROM DECKS WHERE ID = ?");
+        deleteDeck.setInt(1, deckPK);
+        deleteDeck.executeUpdate();
+        StringBuilder delRelQuery = new StringBuilder();
+        delRelQuery.append("DELETE FROM CARDS_TO_MOVES JOIN CARDS ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID ");
+        delRelQuery.append("WHERE DECKS_ID = ? ");
+        PreparedStatement delRels = conn.prepareStatement(delRelQuery.toString());
+        delRels.setInt(1, deckPK);
+        delRels.executeUpdate();
+        PreparedStatement deleteCards = conn.prepareStatement("DELETE FROM CARDS WHERE DECKS_ID = ?");
+        deleteCards.setInt(1, deckPK);
+        deleteCards.executeUpdate();
+        conn.commit();
+
         this.makeDeckList();
         pane.revalidate();
         pane.repaint();
