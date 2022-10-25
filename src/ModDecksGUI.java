@@ -25,11 +25,9 @@ public final class ModDecksGUI implements ActionListener {
         Class.forName("org.sqlite.JDBC");
         String jbdcUrl = "jdbc:sqlite:database.db";
         conn = DriverManager.getConnection(jbdcUrl);
-        synchronized (conn) {
-            conn.setAutoCommit(false);
-        }
-
+        conn.setAutoCommit(false);
         pane = newPane;
+
         JLabel title = new JLabel("MODIFY DECKS");
         createBtn = new JButton("CREATE");
         createBtn.addActionListener(this);
@@ -51,27 +49,26 @@ public final class ModDecksGUI implements ActionListener {
 
         this.makeDeckList();
 
-        synchronized (pane) {
-            pane.removeAll();
-            pane.add(header);
-            pane.add(leftBar);
-            pane.add(deckPane);
-            pane.revalidate();
-            pane.repaint();
-        }
+        pane.removeAll();
+        pane.add(header);
+        pane.add(leftBar);
+        pane.add(deckPane);
+        pane.revalidate();
+        pane.repaint();
     }
 
-    private void getUpdatedSummaries() throws SQLException {
+    private synchronized void getUpdatedSummaries() throws SQLException {
         StringBuilder toReviewQ = new StringBuilder();
-        toReviewQ.append("SELECT DECKS.NAME, COUNT(CARDS.ID) ");
-        toReviewQ.append("FROM DECKS JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID ");
+        toReviewQ.append("SELECT DECKS.NAME, COALESCE(COUNT(CARDS.ID), 0) ");
+        toReviewQ.append("FROM DECKS LEFT JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID ");
         toReviewQ.append("WHERE (? - CARDS.LAST_REVIEW) > (CARDS.IR_INTERVAL * 86400000) ");
+        toReviewQ.append("OR CARDS.ID IS NULL ");
         toReviewQ.append("GROUP BY DECKS.ID ");
         toReviewQ.append("ORDER BY DECKS.NAME DESC ");
 
         StringBuilder cardTotalsQ = new StringBuilder();
-        cardTotalsQ.append("SELECT COUNT(CARDS.ID), DECKS.ID ");
-        cardTotalsQ.append("FROM CARDS JOIN DECKS ON CARDS.DECKS_ID = DECKS.ID ");
+        cardTotalsQ.append("SELECT COALESCE(COUNT(CARDS.ID), 0), DECKS.ID ");
+        cardTotalsQ.append("FROM DECKS LEFT JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID ");
         cardTotalsQ.append("GROUP BY DECKS.ID ");
         cardTotalsQ.append("ORDER BY DECKS.NAME DESC ");
 
@@ -80,39 +77,36 @@ public final class ModDecksGUI implements ActionListener {
         cardTotals = new ArrayList<Integer>();
         deckPKs = new ArrayList<Integer>();
 
-        synchronized (conn) {
-            long currentTime = System.currentTimeMillis();
-            PreparedStatement toReviewStmt = conn.prepareStatement(toReviewQ.toString());
-            PreparedStatement cardTotalsStmt = conn.prepareStatement(cardTotalsQ.toString());
-            toReviewStmt.setLong(1, currentTime);
+        long currentTime = System.currentTimeMillis();
+        PreparedStatement toReviewStmt = conn.prepareStatement(toReviewQ.toString());
+        PreparedStatement cardTotalsStmt = conn.prepareStatement(cardTotalsQ.toString());
+        toReviewStmt.setLong(1, currentTime);
 
-            ResultSet rs1 = toReviewStmt.executeQuery();
-            ResultSet rs2 = cardTotalsStmt.executeQuery();
-
-            while (rs1.next()) {
-                nameList.add(rs1.getString(1));
-                reviewCount.add(rs1.getInt(2));
-            }
-
-            while (rs2.next()) {
-                cardTotals.add(rs2.getInt(1));
-                deckPKs.add(rs2.getInt(2));
-            }
-
-            conn.commit();
+        ResultSet rs1 = toReviewStmt.executeQuery();
+        ResultSet rs2 = cardTotalsStmt.executeQuery();
+        while (rs1.next()) {
+            nameList.add(rs1.getString(1));
+            reviewCount.add(rs1.getInt(2));
         }
 
+        while (rs2.next()) {
+            cardTotals.add(rs2.getInt(1));
+            deckPKs.add(rs2.getInt(2));
+        }
+        conn.commit();
     }
 
-    private void makeDeckList() throws SQLException, ClassNotFoundException {
+    public synchronized void makeDeckList() throws SQLException, ClassNotFoundException {
         this.getUpdatedSummaries();
         String[] deckLabels = new String[nameList.size()];
 
-        if (nameList.size() == 0) {
+        if (deckLabels.length == 0) {
+            deckPane.removeAll();
             deckPane.add(new JLabel("To create a deck, click CREATE!"));
         }
 
-        if (nameList.size() != 0) {
+        if (deckLabels.length != 0) {
+            deckPane.removeAll();
             for (int i = 0; i < deckLabels.length; i++) {
                 StringBuilder label = new StringBuilder();
                 label.append(nameList.get(i));
@@ -129,7 +123,7 @@ public final class ModDecksGUI implements ActionListener {
     }
 
 
-    private void deleteDeck(int pk) throws ClassNotFoundException, SQLException {
+    private synchronized void deleteDeck(int pk) throws ClassNotFoundException, SQLException {
         synchronized (conn) {
             PreparedStatement deleteStmt = conn.prepareStatement("DELETE FROM DECKS WHERE ID = ?");
             deleteStmt.setInt(1, pk);
@@ -137,6 +131,8 @@ public final class ModDecksGUI implements ActionListener {
             conn.commit();
         }
         this.makeDeckList();
+        pane.revalidate();
+        pane.repaint();
     }
 
     @Override
@@ -145,16 +141,14 @@ public final class ModDecksGUI implements ActionListener {
             // If the user clicks delete, get the index of the item that was selected when they clicked delete.
             int index = deckList.getSelectedIndex();
             // -1 is returned by getSelectedIndex if not row was selected when the user clicked delete.
+
+            // !!!!! Currently a bug if you add decks and delete them. Possibly decksPK is not being updated correctly
             if (index != -1) {
                 int pk = deckPKs.get(index);
                 try {
                     this.deleteDeck(pk);
                 } catch (ClassNotFoundException | SQLException ex) {
                     throw new RuntimeException(ex);
-                }
-                synchronized (pane) {
-                    pane.revalidate();
-                    pane.repaint();
                 }
             }
         }
@@ -168,7 +162,60 @@ public final class ModDecksGUI implements ActionListener {
     public class CreateDeckThread extends Thread {
         @Override
         public void run() {
-            new CreateDeckGUI(pane, conn);
+            new CreateDeckGUI();
+        }
+    }
+
+    public final class CreateDeckGUI implements ActionListener {
+        private JButton createButton;
+        private JTextField enterName;
+        private JFrame popup;
+
+        public CreateDeckGUI() {
+            popup = new JFrame();
+            popup.setSize(400, 300);
+            popup.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            JPanel createPane = new JPanel();
+            popup.add(createPane);
+
+            JLabel headLabel = new JLabel("CREATE A NEW DECK");
+            enterName = new JTextField(15);
+            createButton = new JButton("CREATE");
+            createButton.addActionListener(this);
+            createPane.add(headLabel);
+            createPane.add(enterName);
+            createPane.add(createButton);
+            popup.setVisible(true);
+        }
+
+        private synchronized void createDeck(String name) throws ClassNotFoundException, SQLException {
+            System.out.println("Called createDeck");
+            // Pane, conn, and data modified by makeDeckList are mutable and between threads, so the thread
+            // needs to be synchronized.
+            PreparedStatement createStmt = conn.prepareStatement("INSERT INTO DECKS(ID, NAME) VALUES(NULL, ?)");
+            createStmt.setString(1, name.strip());
+            createStmt.executeUpdate();
+            conn.commit();
+
+            ModDecksGUI.this.makeDeckList();
+            pane.revalidate();
+            pane.repaint();
+
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == createButton)   {
+                if (!enterName.getText().isEmpty()) {
+                    String name = enterName.getText();
+                    try {
+                        this.createDeck(name);
+                    } catch (ClassNotFoundException | SQLException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    popup.dispose();
+                }
+            }
         }
     }
 }

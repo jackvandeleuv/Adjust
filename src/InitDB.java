@@ -126,10 +126,11 @@ public final class InitDB  {
 //            joinStmt.setInt(1, 26808 + i);
 //            joinStmt.executeUpdate();
 //        }
-        stmt.execute("SELECT ID, LINES_ID FROM MOVES");
+        stmt.execute("SELECT ID, NAME FROM DECKS");
         ResultSet rs = stmt.getResultSet();
         while (rs.next()) {
             System.out.println(rs.getInt(1));
+            System.out.println(rs.getString(2));
         }
 
         connection.close();
