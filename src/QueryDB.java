@@ -16,6 +16,8 @@ public final class QueryDB {
         toReviewQ.append("GROUP BY DECKS.ID ");
         toReviewQ.append("ORDER BY DECKS.NAME DESC ");
 
+        // Overall card totals may be added to MainGUI soon. Might be possible to get rid of the DECKS.ID selection
+        // at this point.
         StringBuilder cardTotalsQ = new StringBuilder();
         cardTotalsQ.append("SELECT COUNT(CARDS.ID), DECKS.ID ");
         cardTotalsQ.append("FROM CARDS JOIN DECKS ON CARDS.DECKS_ID = DECKS.ID ");
@@ -25,6 +27,7 @@ public final class QueryDB {
         Class.forName("org.sqlite.JDBC");
         String jbdcUrl = "jdbc:sqlite:database.db";
         Connection conn = DriverManager.getConnection(jbdcUrl);
+        conn.setAutoCommit(false);
         PreparedStatement reviewStmt = conn.prepareStatement(toReviewQ.toString());
         PreparedStatement totalsStmt = conn.prepareStatement(cardTotalsQ.toString());
 
@@ -47,6 +50,8 @@ public final class QueryDB {
             cardTotals.add(rs2.getInt(1));
             deckPKs.add(rs2.getInt(2));
         }
+
+        conn.commit();
 
         return new DeckSummary(nameList, reviewCount, cardTotals, deckPKs);
     }

@@ -23,12 +23,13 @@ public final class BoardGUI implements ActionListener {
     private JButton rightArrow;
     private int currentCardId;
     private int currentDeckId;
+    private final JPanel pane;
 
-    public BoardGUI(int newCurrentDeckId, JFrame window) throws InterruptedException {
+    public BoardGUI(int newCurrentDeckId, JPanel outerPane) throws InterruptedException {
+        pane = outerPane;
+
         revEng = new ReviewEngine();
         currentDeckId = newCurrentDeckId;
-
-        JPanel pane = new JPanel();
 
         boardWrapper = new JPanel();
         GridLayout gLayout = new GridLayout(8, 8);
@@ -59,14 +60,11 @@ public final class BoardGUI implements ActionListener {
         leftCol.add(infoPanel);
         leftCol.add(buttonBox);
 
-        pane.add(leftCol);
-        pane.add(boardWrapper);
-
-        pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
-
-        window.add(pane);
-
-        window.setVisible(true);
+        synchronized (pane) {
+            pane.add(leftCol);
+            pane.add(boardWrapper);
+            pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
+        }
 
         this.promptUser(currentDeckId);
     }
