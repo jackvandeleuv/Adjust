@@ -128,8 +128,8 @@ public final class ModDecksGUI implements ActionListener {
         deleteDeck.setInt(1, deckPK);
         deleteDeck.executeUpdate();
         StringBuilder delRelQuery = new StringBuilder();
-        delRelQuery.append("DELETE FROM CARDS_TO_MOVES JOIN CARDS ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID ");
-        delRelQuery.append("WHERE DECKS_ID = ? ");
+        delRelQuery.append("DELETE FROM CARDS_TO_MOVES WHERE CARDS_ID IN ( ");
+        delRelQuery.append("SELECT ID FROM CARDS WHERE DECKS_ID = ?) ");
         PreparedStatement delRels = conn.prepareStatement(delRelQuery.toString());
         delRels.setInt(1, deckPK);
         delRels.executeUpdate();
