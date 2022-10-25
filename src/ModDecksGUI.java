@@ -123,11 +123,14 @@ public final class ModDecksGUI implements ActionListener {
     }
 
 
-    private synchronized void deleteDeck(int pk) throws ClassNotFoundException, SQLException {
+    private synchronized void deleteDeck(int deckPK) throws ClassNotFoundException, SQLException {
         synchronized (conn) {
-            PreparedStatement deleteStmt = conn.prepareStatement("DELETE FROM DECKS WHERE ID = ?");
-            deleteStmt.setInt(1, pk);
-            deleteStmt.executeUpdate();
+            PreparedStatement deleteDeck = conn.prepareStatement("DELETE FROM DECKS WHERE ID = ?");
+            deleteDeck.setInt(1, deckPK);
+            deleteDeck.executeUpdate();
+            PreparedStatement deleteCards = conn.prepareStatement("DELETE FROM CARDS WHERE DECKS_ID = ?");
+            deleteCards.setInt(1, deckPK);
+            deleteCards.executeUpdate();
             conn.commit();
         }
         this.makeDeckList();

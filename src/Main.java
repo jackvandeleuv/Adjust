@@ -30,8 +30,8 @@ public class Main {
 
         window.setJMenuBar(menuBar);
         window.setVisible(true);
-        InitDB.newTestCards();
-//        new ModDecksGUI(pane);
+
+        new ModDecksGUI(pane);
 
     }
 }
