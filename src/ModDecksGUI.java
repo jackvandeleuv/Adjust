@@ -72,10 +72,10 @@ public final class ModDecksGUI implements ActionListener {
         cardTotalsQ.append("GROUP BY DECKS.ID ");
         cardTotalsQ.append("ORDER BY DECKS.NAME DESC ");
 
-        nameList = new ArrayList<String>();
-        reviewCount = new ArrayList<Integer>();
-        cardTotals = new ArrayList<Integer>();
-        deckPKs = new ArrayList<Integer>();
+        nameList = new ArrayList<>();
+        reviewCount = new ArrayList<>();
+        cardTotals = new ArrayList<>();
+        deckPKs = new ArrayList<>();
 
         long currentTime = System.currentTimeMillis();
         PreparedStatement toReviewStmt = conn.prepareStatement(toReviewQ.toString());
@@ -122,17 +122,21 @@ public final class ModDecksGUI implements ActionListener {
         }
     }
 
-
     private synchronized void deleteDeck(int deckPK) throws ClassNotFoundException, SQLException {
+        System.out.println(deckPK);
         PreparedStatement deleteDeck = conn.prepareStatement("DELETE FROM DECKS WHERE ID = ?");
         deleteDeck.setInt(1, deckPK);
         deleteDeck.executeUpdate();
+        conn.commit();
+
         StringBuilder delRelQuery = new StringBuilder();
         delRelQuery.append("DELETE FROM CARDS_TO_MOVES WHERE CARDS_ID IN ( ");
         delRelQuery.append("SELECT ID FROM CARDS WHERE DECKS_ID = ?) ");
         PreparedStatement delRels = conn.prepareStatement(delRelQuery.toString());
         delRels.setInt(1, deckPK);
         delRels.executeUpdate();
+        conn.commit();
+
         PreparedStatement deleteCards = conn.prepareStatement("DELETE FROM CARDS WHERE DECKS_ID = ?");
         deleteCards.setInt(1, deckPK);
         deleteCards.executeUpdate();

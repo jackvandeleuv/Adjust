@@ -60,11 +60,9 @@ public final class BoardGUI implements ActionListener {
         leftCol.add(infoPanel);
         leftCol.add(buttonBox);
 
-        synchronized (pane) {
-            pane.add(leftCol);
-            pane.add(boardWrapper);
-            pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
-        }
+        pane.add(leftCol);
+        pane.add(boardWrapper);
+        pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
 
         this.promptUser(currentDeckId);
     }
