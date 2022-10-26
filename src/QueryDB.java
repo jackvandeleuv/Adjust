@@ -1,88 +1,91 @@
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public final class QueryDB {
 
     public QueryDB() {}
 
-    public DeckSummary getDecksSummary() throws ClassNotFoundException, SQLException {
-
-        StringBuilder toReviewQ = new StringBuilder();
-        toReviewQ.append("SELECT DECKS.NAME, COUNT(CARDS.ID) ");
-        toReviewQ.append("FROM DECKS JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID ");
-        toReviewQ.append("WHERE (? - CARDS.LAST_REVIEW) > (CARDS.IR_INTERVAL * 86400000) ");
-        toReviewQ.append("GROUP BY DECKS.ID ");
-        toReviewQ.append("ORDER BY DECKS.NAME DESC ");
-
-        // Overall card totals may be added to MainGUI soon. Might be possible to get rid of the DECKS.ID selection
-        // at this point.
+    public List<DeckSummary> getDeckSummaries() throws ClassNotFoundException, SQLException {
         StringBuilder cardTotalsQ = new StringBuilder();
-        cardTotalsQ.append("SELECT COUNT(CARDS.ID), DECKS.ID ");
-        cardTotalsQ.append("FROM CARDS JOIN DECKS ON CARDS.DECKS_ID = DECKS.ID ");
+        cardTotalsQ.append("SELECT DECKS.ID, COALESCE(COUNT(CARDS.ID), 0) ");
+        cardTotalsQ.append("FROM DECKS LEFT JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID ");
         cardTotalsQ.append("GROUP BY DECKS.ID ");
         cardTotalsQ.append("ORDER BY DECKS.NAME DESC ");
+
+        StringBuilder toReviewQ = new StringBuilder();
+        toReviewQ.append("SELECT DECKS.NAME, COALESCE(COUNT(CARDS.ID), 0) ");
+        toReviewQ.append("FROM DECKS LEFT JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID ");
+        toReviewQ.append("WHERE (? - CARDS.LAST_REVIEW) > (CARDS.IR_INTERVAL * 86400000) ");
+        toReviewQ.append("OR CARDS.ID IS NULL ");
+        toReviewQ.append("GROUP BY DECKS.ID ");
+        toReviewQ.append("ORDER BY DECKS.NAME DESC ");
 
         Class.forName("org.sqlite.JDBC");
         String jbdcUrl = "jdbc:sqlite:database.db";
         Connection conn = DriverManager.getConnection(jbdcUrl);
         conn.setAutoCommit(false);
-        PreparedStatement reviewStmt = conn.prepareStatement(toReviewQ.toString());
         PreparedStatement totalsStmt = conn.prepareStatement(cardTotalsQ.toString());
+        PreparedStatement reviewStmt = conn.prepareStatement(toReviewQ.toString());
 
         long currentTime = System.currentTimeMillis();
         reviewStmt.setLong(1, currentTime);
-        ResultSet rs1 = reviewStmt.executeQuery();
-        ResultSet rs2 = totalsStmt.executeQuery();
+        ResultSet rs1 = totalsStmt.executeQuery();
+        ResultSet rs2 = reviewStmt.executeQuery();
 
-        List<String> nameList = new ArrayList<String>();
-        List<Integer> reviewCount = new ArrayList<Integer>();
-        List<Integer> cardTotals = new ArrayList<Integer>();
-        List<Integer> deckPKs = new ArrayList<Integer>();
-
+        List<DeckSummary> sumList = new ArrayList<>();
         while (rs1.next()) {
-            nameList.add(rs1.getString(1));
-            reviewCount.add(rs1.getInt(2));
+            DeckSummary sum = new DeckSummary(rs1.getInt(1));
+            sum.setCardTotal(rs1.getInt(2));
+            sumList.add(sum);
         }
 
+        int index = 0;
         while (rs2.next()) {
-            cardTotals.add(rs2.getInt(1));
-            deckPKs.add(rs2.getInt(2));
+            DeckSummary sum = sumList.get(index);
+            sum.setName(rs2.getString(1));
+            sum.setReviewCount(rs2.getInt(2));
+            index = index + 1;
         }
 
         conn.commit();
 
-        return new DeckSummary(nameList, reviewCount, cardTotals, deckPKs);
+        return sumList;
     }
 
     public final class DeckSummary {
-        private final List<String> nameList;
-        private final List<Integer> reviewCounts;
-        private final List<Integer> cardTotals;
-        private final List<Integer> deckPKs;
+        private String name;
+        private int reviewCount;
+        private int cardTotal;
+        private final int deckPK;
 
-        public DeckSummary(List<String> newNameList, List<Integer> newReviewCounts, List<Integer> newCardTotals, List<Integer> newDeckPKs) {
-            nameList = newNameList;
-            reviewCounts = newReviewCounts;
-            cardTotals = newCardTotals;
-            deckPKs = newDeckPKs;
+        public DeckSummary(int newDeckPK) {
+            deckPK = newDeckPK;
         }
 
-        public List<String> getNameList() {
-            return nameList;
+        public String getNameList() {
+            return name;
         }
 
-        public List<Integer> getReviewCounts() {
-            return reviewCounts;
+        public int getReviewCounts() {
+            return reviewCount;
         }
 
-        public List<Integer> getCardTotals() {
-            return cardTotals;
+        public int getCardTotals() {
+            return cardTotal;
         }
 
-        public List<Integer> getDeckPKs() {
-            return deckPKs;
+        public int getDeckPKs() {
+            return deckPK;
+        }
+
+        public void setReviewCount(int newReviewCount) {reviewCount = newReviewCount;}
+        public void setCardTotal(int newCardTotal) {cardTotal = newCardTotal;}
+        public void setName(String newName) {name = newName;}
+
+        @Override
+        public String toString() {
+            return name + " DUE: " + reviewCount + "/" + cardTotal;
         }
     }
 }

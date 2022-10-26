@@ -1,84 +1,90 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.List;
 
-public class MainGUI {
-    private JButton[] deckButtons;
+public class MainGUI implements ActionListener {
     private List<String> nameList;
     private List<Integer> reviewCounts;
+    private final JPanel modPane;
+    private final CardLayout controller;
+    private final JPanel container;
+    private final DefaultListModel<QueryDB.DeckSummary> decksModel;
+    private final JList<QueryDB.DeckSummary> decksListComp;
+    private final JPanel mainPane;
+    private final JButton reviewBtn = new JButton("Review Deck");
+    private final JButton modBtn = new JButton("Modify Decks");
 
-    public MainGUI() throws InterruptedException {
+
+    public MainGUI() throws InterruptedException, SQLException, ClassNotFoundException {
 
         JFrame window = new JFrame();
         window.setSize(800, 500);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel container = new JPanel();
-        CardLayout controller = new CardLayout();
+        container = new JPanel();
+        controller = new CardLayout();
         container.setLayout(controller);
         window.add(container);
 
-        JPanel mainPane = new JPanel();
+        decksModel = new DefaultListModel<>();
+        decksListComp = new JList<>(decksModel);
+        decksListComp.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        decksListComp.setFixedCellWidth(600);
+        decksListComp.setFixedCellHeight(30);
+        JScrollPane scroller = new JScrollPane(decksListComp);
+        scroller.setSize(300, 300);
+
+        mainPane = new JPanel();
+        mainPane.setSize(300, 300);
+        mainPane.add(scroller);
+        mainPane.add(reviewBtn);
+        mainPane.add(modBtn);
+
+        modBtn.addActionListener(this);
+        reviewBtn.addActionListener(this);
+
         JPanel boardPane = new JPanel();
-        JPanel modPane = new JPanel();
+        modPane = new JPanel();
         JPanel cardsPane = new JPanel();
 
-        new BoardGUI(boardPane);
+        container.add(mainPane, "main");
+        container.add(boardPane, "board");
+        container.add(modPane, "mod");
+        container.add(cardsPane, "card");
 
-        container.add(mainPane, 1);
-        container.add(boardPane, 2);
-        container.add(modPane, 3);
-        container.add(cardsPane, 4);
+        new ModDecksGUI(modPane, controller, container, this);
 
-        JMenuBar menuBar = new JMenuBar();
-        JMenu opt1 = new JMenu("Main Menu");
-        JMenu opt2 = new JMenu("Modify Decks");
-        menuBar.add(opt1);
-        menuBar.add(opt2);
+        this.updateMainPane();
 
-        window.setJMenuBar(menuBar);
         window.setVisible(true);
+    }
 
-//        InitDB.queryDB();
-//        new ModDecksGUI(pane);
-//        new AddLinesGUI(pane, 2);
-//        try {
-//            new BoardGUI(2, pane);
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
+    public void updateMainPane() throws SQLException, ClassNotFoundException {
+        decksModel.removeAllElements();
+        QueryDB queryDB = new QueryDB();
+        List<QueryDB.DeckSummary> deckSums = queryDB.getDeckSummaries();
 
-
-
-
-        try {
-            QueryDB queryDB = new QueryDB();
-            QueryDB.DeckSummary decksSummary = queryDB.getDecksSummary();
-
-            nameList = decksSummary.getNameList();
-            reviewCounts = decksSummary.getReviewCounts();
-            deckButtons = new JButton[nameList.size()];
-            for (int i = 0; i < deckButtons.length; i++) {
-                JButton button = new JButton();
-                JLabel review = new JLabel("Review");
-                button.add(review);
-                deckButtons[i] = button;
-            }
-
-        } catch (ClassNotFoundException | SQLException ex) {
-            System.out.println(ex.getMessage());
-        }
-
-        for (int i = 0; i < deckButtons.length; i++) {
-            JLabel deckName = new JLabel(nameList.get(i));
-            JLabel reviewCount = new JLabel(String.valueOf(reviewCounts.get(i)));
-            mainPane.add(deckButtons[i]);
-            mainPane.add(deckName);
-            mainPane.add(reviewCount);
+        for (int i = 0; i < deckSums.size(); i++) {
+            decksModel.add(i, deckSums.get(i));
         }
 
         mainPane.repaint();
         mainPane.revalidate();
+    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == modBtn) {
+            controller.show(container, "mod");
+            container.revalidate();
+            container.repaint();
+        }
+
+        if (e.getSource() == reviewBtn) {
+            int selIndex = decksListComp.getSelectedIndex();
+            QueryDB.DeckSummary selDeck = decksModel.get(selIndex);
+        }
     }
 }
