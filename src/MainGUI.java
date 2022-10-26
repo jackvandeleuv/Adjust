@@ -92,6 +92,7 @@ public class MainGUI implements ActionListener {
                 QueryDB.DeckSummary selDeck = decksModel.get(selIndex);
                 int selDeckPK = selDeck.getDeckPK();
                 try {
+                    boardPane.removeAll();
                     new BoardGUI(selDeckPK, boardPane, container, controller, this);
                     controller.show(container, "board");
                 } catch (InterruptedException ex) {

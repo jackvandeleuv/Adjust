@@ -15,7 +15,7 @@ public class Main {
             conn = DriverManager.getConnection(jbdcUrl);
             conn.setAutoCommit(false);
             new MainGUI();
-        } catch (ClassNotFoundException | SQLException | InterruptedException ex) {
+        } catch (ClassNotFoundException | SQLException  ex) {
             System.out.println("Could not successfully start program");
             System.out.println(ex.getMessage());
         }
