@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -7,7 +8,50 @@ public class MainGUI {
     private List<String> nameList;
     private List<Integer> reviewCounts;
 
-    public MainGUI(JPanel pane) {
+    public MainGUI() {
+
+        JFrame window = new JFrame();
+        window.setSize(800, 500);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        JPanel container = new JPanel();
+        CardLayout controller = new CardLayout();
+        container.setLayout(controller);
+        window.add(container);
+
+        JPanel mainPane = new JPanel();
+        JPanel boardPane = new JPanel();
+        JPanel modPane = new JPanel();
+        JPanel cardsPane = new JPanel();
+
+        new BoardGUI(boardPane);
+
+        container.add(mainPane, 1);
+        container.add(boardPane, 2);
+        container.add(modPane, 3);
+        container.add(cardsPane, 4);
+
+        JMenuBar menuBar = new JMenuBar();
+        JMenu opt1 = new JMenu("Main Menu");
+        JMenu opt2 = new JMenu("Modify Decks");
+        menuBar.add(opt1);
+        menuBar.add(opt2);
+
+        window.setJMenuBar(menuBar);
+        window.setVisible(true);
+
+//        InitDB.queryDB();
+//        new ModDecksGUI(pane);
+//        new AddLinesGUI(pane, 2);
+//        try {
+//            new BoardGUI(2, pane);
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+
+
+
+
         try {
             QueryDB queryDB = new QueryDB();
             QueryDB.DeckSummary decksSummary = queryDB.getDecksSummary();
@@ -29,12 +73,12 @@ public class MainGUI {
         for (int i = 0; i < deckButtons.length; i++) {
             JLabel deckName = new JLabel(nameList.get(i));
             JLabel reviewCount = new JLabel(String.valueOf(reviewCounts.get(i)));
-            pane.add(deckButtons[i]);
-            pane.add(deckName);
-            pane.add(reviewCount);
+            mainPane.add(deckButtons[i]);
+            mainPane.add(deckName);
+            mainPane.add(reviewCount);
         }
 
-        pane.repaint();
-        pane.revalidate();
+        mainPane.repaint();
+        mainPane.revalidate();
     }
 }

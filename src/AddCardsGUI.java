@@ -3,10 +3,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class AddLinesGUI implements ActionListener {
+public class AddCardsGUI implements ActionListener {
     private List<lineListItem> lines;
     private List<cardListItem> cards;
     private final DefaultListModel<lineListItem> linesModel;
@@ -22,8 +21,8 @@ public class AddLinesGUI implements ActionListener {
     private int lastCardPK;
     private final JComboBox<String> clrSel;
 
-    public AddLinesGUI(JPanel outerPane, int deckPK) throws ClassNotFoundException, SQLException {
-        pane = outerPane;
+    public AddCardsGUI(JPanel cardsPane, int deckPK) throws ClassNotFoundException, SQLException {
+        pane = cardsPane;
         deckID = deckPK;
 
         Class.forName("org.sqlite.JDBC");

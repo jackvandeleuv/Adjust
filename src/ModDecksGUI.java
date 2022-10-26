@@ -21,12 +21,12 @@ public final class ModDecksGUI implements ActionListener {
 
     private final Connection conn;
 
-    public ModDecksGUI(JPanel newPane) throws SQLException, ClassNotFoundException {
+    public ModDecksGUI(JPanel modPane) throws SQLException, ClassNotFoundException {
         Class.forName("org.sqlite.JDBC");
         String jbdcUrl = "jdbc:sqlite:database.db";
         conn = DriverManager.getConnection(jbdcUrl);
         conn.setAutoCommit(false);
-        pane = newPane;
+        pane = modPane;
 
         JLabel title = new JLabel("MODIFY DECKS");
         createBtn = new JButton("CREATE");

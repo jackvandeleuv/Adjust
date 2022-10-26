@@ -25,8 +25,8 @@ public final class BoardGUI implements ActionListener {
     private int currentDeckId;
     private final JPanel pane;
 
-    public BoardGUI(int newCurrentDeckId, JPanel outerPane) throws InterruptedException {
-        pane = outerPane;
+    public BoardGUI(int newCurrentDeckId, JPanel boardPane) throws InterruptedException {
+        pane = boardPane;
 
         revEng = new ReviewEngine();
         currentDeckId = newCurrentDeckId;
