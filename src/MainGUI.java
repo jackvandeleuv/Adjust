@@ -8,7 +8,7 @@ public class MainGUI {
     private List<String> nameList;
     private List<Integer> reviewCounts;
 
-    public MainGUI() {
+    public MainGUI() throws InterruptedException {
 
         JFrame window = new JFrame();
         window.setSize(800, 500);
