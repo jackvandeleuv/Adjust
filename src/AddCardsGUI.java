@@ -58,7 +58,6 @@ public class AddCardsGUI implements ActionListener {
         this.queryCards();
         this.updateCardsModel();
 
-        pane.removeAll();
         pane.add(totalScroller);
         pane.add(makeCardsBtn);
         pane.add(clrSel);

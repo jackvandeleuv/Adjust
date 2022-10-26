@@ -16,6 +16,8 @@ public class MainGUI implements ActionListener {
     private final JPanel mainPane;
     private final JButton reviewBtn = new JButton("Review Deck");
     private final JButton modBtn = new JButton("Modify Decks");
+    private final JPanel boardPane = new JPanel();
+
 
 
     public MainGUI() throws InterruptedException, SQLException, ClassNotFoundException {
@@ -46,7 +48,6 @@ public class MainGUI implements ActionListener {
         modBtn.addActionListener(this);
         reviewBtn.addActionListener(this);
 
-        JPanel boardPane = new JPanel();
         modPane = new JPanel();
         JPanel cardsPane = new JPanel();
 
@@ -85,6 +86,13 @@ public class MainGUI implements ActionListener {
         if (e.getSource() == reviewBtn) {
             int selIndex = decksListComp.getSelectedIndex();
             QueryDB.DeckSummary selDeck = decksModel.get(selIndex);
+            int selDeckPK = selDeck.getDeckPK();
+            try {
+                new BoardGUI(selDeckPK, boardPane, container, controller, this);
+                controller.show(container, "board");
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 }

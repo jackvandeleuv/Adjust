@@ -24,8 +24,15 @@ public final class BoardGUI implements ActionListener {
     private int currentCardId;
     private int currentDeckId;
     private final JPanel pane;
+    private final JButton backBtn = new JButton("Back");
+    private final JPanel container;
+    private final CardLayout controller;
+    private final MainGUI mainMenu;
 
-    public BoardGUI(int newCurrentDeckId, JPanel boardPane) throws InterruptedException {
+    public BoardGUI(int newCurrentDeckId, JPanel boardPane, JPanel outerContainer, CardLayout outerController, MainGUI mainMenuGUI) throws InterruptedException {
+        mainMenu = mainMenuGUI;
+        container = outerContainer;
+        controller = outerController;
         pane = boardPane;
 
         revEng = new ReviewEngine();
@@ -61,6 +68,8 @@ public final class BoardGUI implements ActionListener {
         leftCol.add(buttonBox);
 
         pane.add(leftCol);
+        pane.add(backBtn);
+        backBtn.addActionListener(this);
         pane.add(boardWrapper);
         pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
 
@@ -248,6 +257,15 @@ public final class BoardGUI implements ActionListener {
 
         if (e.getSource() == leftArrow) {
             this.paintFEN(beforeFEN);
+        }
+
+        if (e.getSource() == backBtn) {
+            try {
+                mainMenu.updateMainPane();
+            } catch (SQLException | ClassNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
+            controller.show(container, "main");
         }
 
         for (int i = 0; i < selfRating.length; i++) {

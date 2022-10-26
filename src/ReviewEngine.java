@@ -8,9 +8,8 @@ public final class ReviewEngine {
     public ReviewCard getNextCard(int deckId) throws SQLException, ClassNotFoundException {
         Class.forName("org.sqlite.JDBC");
         String jbdcUrl = "jdbc:sqlite:database.db";
-        Connection connection = DriverManager.getConnection(jbdcUrl);
-        connection.setAutoCommit(false);
-        System.out.println("Successfully connected to DB!");
+        Connection conn = DriverManager.getConnection(jbdcUrl);
+        conn.setAutoCommit(false);
 
         StringBuilder query = new StringBuilder();
         query.append("SELECT CARDS.ID, LINES.NAME, LINES.LINE, MOVES.BEFORE_FEN, MOVES.AFTER_FEN ");
@@ -22,7 +21,7 @@ public final class ReviewEngine {
         query.append("LIMIT 1 ");
 
         long currentTime = System.currentTimeMillis();
-        PreparedStatement preStmt = connection.prepareStatement(query.toString());
+        PreparedStatement preStmt = conn.prepareStatement(query.toString());
         preStmt.setInt(1, deckId);
         preStmt.setLong(2, currentTime);
 
@@ -33,16 +32,8 @@ public final class ReviewEngine {
         String line = rs.getString("LINE");
         String beforeFEN = rs.getString("BEFORE_FEN");
         String afterFEN = rs.getString("AFTER_FEN");
-//        System.out.println(id);
-//        System.out.println(name);
-//        System.out.println(line);
-//        System.out.println(beforeFEN);
-//        System.out.println(afterFEN);
 
-        rs.close();
-        preStmt.close();
-        connection.commit();
-        System.out.println("Connection closed!");
+        conn.commit();
 
         if (name != null && line != null && beforeFEN != null && afterFEN != null) {
             return new ReviewCard(id, name, line, beforeFEN, afterFEN);
@@ -55,28 +46,26 @@ public final class ReviewEngine {
         Class.forName("org.sqlite.JDBC");
         String jbdcUrl = "jdbc:sqlite:database.db";
         Connection conn = DriverManager.getConnection(jbdcUrl);
-        System.out.println("Successfully connected to DB!");
+        conn.setAutoCommit(false);
 
         String query = "SELECT REP_NUMBER, EASY_FACTOR, IR_INTERVAL FROM CARDS WHERE ID = ?";
         PreparedStatement preStmt = conn.prepareStatement(query);
         preStmt.setInt(1, cardId);
 
         ResultSet rs = preStmt.executeQuery();
-
         int repNum = rs.getInt("REP_NUMBER");
         long interval = rs.getLong("IR_INTERVAL");
         double easFactor = rs.getDouble("EASY_FACTOR");
 
-        rs.close();
-        preStmt.close();
+        conn.commit();
 
         double[] memoResult = this.superMemoAlgo(grade, repNum, easFactor, interval);
-
-        System.out.println(cardId);
-        for (double d : memoResult) {
-            System.out.println(d);
-        }
-        System.out.println("\n");
+//
+//        System.out.println(cardId);
+//        for (double d : memoResult) {
+//            System.out.println(d);
+//        }
+//        System.out.println("\n");
 
         StringBuilder query2 = new StringBuilder();
         query2.append("UPDATE CARDS ");
@@ -100,8 +89,7 @@ public final class ReviewEngine {
 //        System.out.println(cardId);
 
         preStmt2.executeUpdate();
-
-        System.out.println("Connection closed!");
+        conn.commit();
     }
 
     private double[] superMemoAlgo(int grade, int repNum, double easFactor, long interval) {

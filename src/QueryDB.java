@@ -71,11 +71,7 @@ public final class QueryDB {
             return reviewCount;
         }
 
-        public int getCardTotals() {
-            return cardTotal;
-        }
-
-        public int getDeckPKs() {
+        public int getDeckPK() {
             return deckPK;
         }
 
