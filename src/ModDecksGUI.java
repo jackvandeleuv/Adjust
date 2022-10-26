@@ -226,14 +226,16 @@ public final class ModDecksGUI implements ActionListener {
 
         if (e.getSource() == modifyBtn) {
             int index = decksListComp.getSelectedIndex();
-            DeckListItem deck = decksModel.getElementAt(index);
-            int deckPK = deck.getDeckPK();
-            try {
-                cardsPane.removeAll();
-                new AddCardsGUI(cardsPane, deckPK, container, controller, this);
-                controller.show(container, "cards");
-            } catch (ClassNotFoundException | SQLException ex) {
-                throw new RuntimeException(ex);
+            if (index != -1) {
+                DeckListItem deck = decksModel.getElementAt(index);
+                int deckPK = deck.getDeckPK();
+                try {
+                    cardsPane.removeAll();
+                    new AddCardsGUI(cardsPane, deckPK, container, controller, this);
+                    controller.show(container, "cards");
+                } catch (ClassNotFoundException | SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         }
     }

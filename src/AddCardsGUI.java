@@ -154,11 +154,11 @@ public class AddCardsGUI implements ActionListener {
 
         String colorChoice = "";
         if (clr.equals("White")) {
-            colorChoice = " AND MOVES.ORDER_IN_LINE % 2 != 0";
+            colorChoice = " AND MOVES.ORDER_IN_LINE % 2 != 0 ";
         }
 
         if (clr.equals("Black")) {
-            colorChoice = " AND MOVES.ORDER_IN_LINE % 2 == 0";
+            colorChoice = " AND MOVES.ORDER_IN_LINE % 2 == 0 ";
         }
 
         List<Integer> movePkList = new ArrayList<>();
@@ -168,11 +168,16 @@ public class AddCardsGUI implements ActionListener {
                 "SELECT MOVES.LINES_ID FROM CARDS " +
                 "JOIN CARDS_TO_MOVES ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID " +
                 "JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID " +
-                "WHERE DECKS_ID = ?)" + colorChoice);
+                "WHERE DECKS_ID = ?)" + colorChoice + " AND BEFORE_FEN NOT IN (" +
+                "SELECT BEFORE_FEN FROM MOVES " +
+                "JOIN CARDS_TO_MOVES ON MOVES.ID = CARDS_TO_MOVES.MOVES_ID " +
+                "JOIN CARDS ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID " +
+                "WHERE CARDS.DECKS_ID = ?)");
         ResultSet rs = movesStmt.getResultSet();
         for (int linePk : linePkList) {
             movesStmt.setInt(1, linePk);
             movesStmt.setInt(2, deckID);
+            movesStmt.setInt(3, deckID);
             movesStmt.executeQuery();
             while (rs.next()) {
                 movePkList.add(rs.getInt(1));
