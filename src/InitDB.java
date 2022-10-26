@@ -101,9 +101,10 @@ public final class InitDB  {
     public static void queryDB() throws ClassNotFoundException, SQLException {
         Statement stmt = Main.conn.createStatement();
 
-        stmt.execute("SELECT MOVES_ID, CARDS_ID FROM CARDS_TO_MOVES");
+        stmt.execute("SELECT CARDS_TO_MOVES.MOVES_ID, CARDS_TO_MOVES.CARDS_ID, CARDS.DECKS_ID FROM CARDS_TO_MOVES JOIN CARDS ON CARDS.ID = CARDS_TO_MOVES.CARDS_ID");
         ResultSet rs = stmt.getResultSet();
 
+        System.out.println("CARDS_TO_MOVES:");
         while (rs.next()) {
             System.out.println("+++++++++");
             System.out.println("MOVES:");
@@ -111,14 +112,22 @@ public final class InitDB  {
             System.out.println("CARDS:");
             System.out.println(rs.getInt(2));
             System.out.println("+++++++++");
+            System.out.println("DECK");
+            System.out.println(rs.getInt(3));
+            System.out.println("|||||||||||||||||||");
         }
 
-        stmt.execute("SELECT ID FROM CARDS");
+        System.out.println("CARDS:");
+        stmt.execute("SELECT ID, DECKS_ID, IR_INTERVAL FROM CARDS");
         ResultSet rs2 = stmt.getResultSet();
         while (rs2.next()) {
             System.out.println(rs2.getInt(1));
+            System.out.println(rs2.getInt(2));
+            System.out.println("IR_INTERVAL:");
+            System.out.println(rs2.getInt(3));
         }
 
+        System.out.println("DECKS:");
         stmt.execute("SELECT ID FROM DECKS");
         ResultSet rs3 = stmt.getResultSet();
         while (rs3.next()) {

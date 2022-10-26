@@ -144,14 +144,39 @@ public final class ModDecksGUI implements ActionListener {
         pane.repaint();
     }
 
+    private void createDeck(String name) throws ClassNotFoundException, SQLException {
+        // Pane, conn, and data modified by makeDeckList are mutable and between threads, so the thread
+        // needs to be synchronized.
+        PreparedStatement createStmt = Main.conn.prepareStatement("INSERT INTO DECKS(ID, NAME) VALUES(NULL, ?)");
+        createStmt.setString(1, name.strip());
+        createStmt.executeUpdate();
+        Main.conn.commit();
+
+        this.updateDeckModel();
+        pane.revalidate();
+        pane.repaint();
+    }
+
+    private void renameDeck(int pk, String name) throws ClassNotFoundException, SQLException {
+        // Pane, conn, and data modified by makeDeckList are mutable and between threads, so the thread
+        // needs to be synchronized.
+        PreparedStatement renameStmt = Main.conn.prepareStatement("UPDATE DECKS SET NAME = ? WHERE ID = ?");
+        renameStmt.setString(1, name.strip());
+        renameStmt.setInt(2, pk);
+        renameStmt.executeUpdate();
+        Main.conn.commit();
+
+        this.updateDeckModel();
+        pane.revalidate();
+        pane.repaint();
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == deleteBtn) {
             // If the user clicks delete, get the index of the item that was selected when they clicked delete.
             int index = decksListComp.getSelectedIndex();
             // -1 is returned by getSelectedIndex if not row was selected when the user clicked delete.
-
-            // !!!!! Currently a bug if you add decks and delete them. Possibly decksPK is not being updated correctly
             if (index != -1) {
                 DeckListItem deck = decksModel.getElementAt(index);
                 int pk = deck.getDeckPK();
@@ -164,8 +189,30 @@ public final class ModDecksGUI implements ActionListener {
         }
 
         if (e.getSource() == createBtn) {
-            CreateDeckThread cdt = new CreateDeckThread();
-            cdt.start();
+            String deckName = JOptionPane.showInputDialog("Enter the name for your new deck:");
+            if (deckName != null && !deckName.isBlank()) {
+                try {
+                    this.createDeck(deckName);
+                } catch (ClassNotFoundException | SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+
+        if (e.getSource() == renameBtn) {
+            int index = decksListComp.getSelectedIndex();
+            if (index != -1) {
+                DeckListItem deck = decksModel.getElementAt(index);
+                int pk = deck.getDeckPK();
+                String newName = JOptionPane.showInputDialog("Enter the updated name:");
+                if (newName != null && !newName.isBlank()) {
+                    try {
+                        this.renameDeck(pk, newName);
+                    } catch (SQLException | ClassNotFoundException ex){
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
         }
 
         if (e.getSource() == backBtn) {
@@ -182,6 +229,7 @@ public final class ModDecksGUI implements ActionListener {
             DeckListItem deck = decksModel.getElementAt(index);
             int deckPK = deck.getDeckPK();
             try {
+                cardsPane.removeAll();
                 new AddCardsGUI(cardsPane, deckPK, container, controller, this);
                 controller.show(container, "cards");
             } catch (ClassNotFoundException | SQLException ex) {
@@ -213,63 +261,6 @@ public final class ModDecksGUI implements ActionListener {
             return name + " DUE: " + reviewCount + "/" + cardTotal;
         }
     }
-
-    public class CreateDeckThread extends Thread {
-        @Override
-        public void run() {
-            new CreateDeckGUI();
-        }
-    }
-
-    public final class CreateDeckGUI implements ActionListener {
-        private JButton createButton;
-        private JTextField enterName;
-        private JFrame popup;
-
-        public CreateDeckGUI() {
-            popup = new JFrame();
-            popup.setSize(400, 300);
-            popup.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            JPanel createPane = new JPanel();
-            popup.add(createPane);
-
-            JLabel headLabel = new JLabel("CREATE A NEW DECK");
-            enterName = new JTextField(15);
-            createButton = new JButton("CREATE");
-            createButton.addActionListener(this);
-            createPane.add(headLabel);
-            createPane.add(enterName);
-            createPane.add(createButton);
-            popup.setVisible(true);
-        }
-
-        private synchronized void createDeck(String name) throws ClassNotFoundException, SQLException {
-            // Pane, conn, and data modified by makeDeckList are mutable and between threads, so the thread
-            // needs to be synchronized.
-            PreparedStatement createStmt = Main.conn.prepareStatement("INSERT INTO DECKS(ID, NAME) VALUES(NULL, ?)");
-            createStmt.setString(1, name.strip());
-            createStmt.executeUpdate();
-            Main.conn.commit();
-
-            ModDecksGUI.this.updateDeckModel();
-            pane.revalidate();
-            pane.repaint();
-
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == createButton)   {
-                if (!enterName.getText().isEmpty()) {
-                    String name = enterName.getText();
-                    try {
-                        this.createDeck(name);
-                    } catch (ClassNotFoundException | SQLException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                    popup.dispose();
-                }
-            }
-        }
-    }
 }
+
+

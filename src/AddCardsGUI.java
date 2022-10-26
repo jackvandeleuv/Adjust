@@ -165,11 +165,14 @@ public class AddCardsGUI implements ActionListener {
         // Get all the line ids identified by the user that are not already in a deck.
         PreparedStatement movesStmt = Main.conn.prepareStatement("SELECT ID FROM MOVES " +
                 "WHERE LINES_ID = ? AND LINES_ID NOT IN (" +
-                "SELECT MOVES.LINES_ID FROM CARDS_TO_MOVES " +
-                "JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID)" + colorChoice);
+                "SELECT MOVES.LINES_ID FROM CARDS " +
+                "JOIN CARDS_TO_MOVES ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID " +
+                "JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID " +
+                "WHERE DECKS_ID = ?)" + colorChoice);
         ResultSet rs = movesStmt.getResultSet();
         for (int linePk : linePkList) {
             movesStmt.setInt(1, linePk);
+            movesStmt.setInt(2, deckID);
             movesStmt.executeQuery();
             while (rs.next()) {
                 movePkList.add(rs.getInt(1));
@@ -224,7 +227,6 @@ public class AddCardsGUI implements ActionListener {
         cardDel.executeBatch();
         Main.conn.commit();
     }
-
 
     @Override
     public void actionPerformed(ActionEvent e) {
