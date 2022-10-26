@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
@@ -12,23 +13,23 @@ public class AddCardsGUI implements ActionListener {
     private final DefaultListModel<cardListItem> cardsModel;
     private final JList<cardListItem> cardsListComp;
     private final JList<lineListItem> linesListComp;
-
-    private final Connection conn;
     private final JPanel pane;
     private final int deckID;
     private final JButton makeCardsBtn;
     private final JButton deleteBtn;
     private int lastCardPK;
     private final JComboBox<String> clrSel;
+    private final ModDecksGUI modGUI;
+    private final CardLayout controller;
+    private final JPanel container;
+    private final JButton backBtn = new JButton("Back");
 
-    public AddCardsGUI(JPanel cardsPane, int deckPK) throws ClassNotFoundException, SQLException {
+    public AddCardsGUI(JPanel cardsPane, int deckPK, JPanel outerContainer, CardLayout outerController, ModDecksGUI modGUIObj) throws ClassNotFoundException, SQLException {
+        modGUI = modGUIObj;
+        controller = outerController;
+        container = outerContainer;
         pane = cardsPane;
         deckID = deckPK;
-
-        Class.forName("org.sqlite.JDBC");
-        String jbdcUrl = "jdbc:sqlite:database.db";
-        conn = DriverManager.getConnection(jbdcUrl);
-        conn.setAutoCommit(false);
 
         linesModel = new DefaultListModel<>();
         linesListComp = new JList<>(linesModel);
@@ -58,11 +59,14 @@ public class AddCardsGUI implements ActionListener {
         this.queryCards();
         this.updateCardsModel();
 
+        backBtn.addActionListener(this);
+
         pane.add(totalScroller);
         pane.add(makeCardsBtn);
         pane.add(clrSel);
         pane.add(deleteBtn);
         pane.add(cardsScroller);
+        pane.add(backBtn);
         pane.revalidate();
         pane.repaint();
     }
@@ -89,7 +93,7 @@ public class AddCardsGUI implements ActionListener {
         query.append("FROM LINES ");
         query.append("WHERE ECO LIKE ? ");
         query.append("OR NAME LIKE ? ");
-        PreparedStatement lineQ = conn.prepareStatement(query.toString());
+        PreparedStatement lineQ = Main.conn.prepareStatement(query.toString());
         lineQ.setString(1, ecoSearch);
         lineQ.setString(2, searchTerm);
 
@@ -103,7 +107,7 @@ public class AddCardsGUI implements ActionListener {
             line.setEco(rs.getString(4));
             lines.add(line);
         }
-        conn.commit();
+        Main.conn.commit();
     }
 
     private void queryCards() throws SQLException {
@@ -114,7 +118,7 @@ public class AddCardsGUI implements ActionListener {
         query.append("JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID ");
         query.append("JOIN LINES ON MOVES.LINES_ID = LINES.ID ");
         query.append("WHERE DECKS.ID = ? ");
-        PreparedStatement preStmt = conn.prepareStatement(query.toString());
+        PreparedStatement preStmt = Main.conn.prepareStatement(query.toString());
         preStmt.setInt(1, deckID);
         ResultSet rs = preStmt.executeQuery();
 
@@ -128,7 +132,7 @@ public class AddCardsGUI implements ActionListener {
             card.setLastReview(rs.getLong(5));
             cards.add(card);
         }
-        conn.commit();
+        Main.conn.commit();
     }
 
     private void updateCardsModel() {
@@ -147,7 +151,7 @@ public class AddCardsGUI implements ActionListener {
         for (int i = 0; i < linePkList.length; i++) {
             linePkList[i] = choices.get(i).getPk();
         }
-        System.out.println(clr);
+
         String colorChoice = "";
         if (clr.equals("White")) {
             colorChoice = " AND MOVES.ORDER_IN_LINE % 2 != 0";
@@ -159,7 +163,7 @@ public class AddCardsGUI implements ActionListener {
 
         List<Integer> movePkList = new ArrayList<>();
         // Get all the line ids identified by the user that are not already in a deck.
-        PreparedStatement movesStmt = conn.prepareStatement("SELECT ID FROM MOVES " +
+        PreparedStatement movesStmt = Main.conn.prepareStatement("SELECT ID FROM MOVES " +
                 "WHERE LINES_ID = ? AND LINES_ID NOT IN (" +
                 "SELECT MOVES.LINES_ID FROM CARDS_TO_MOVES " +
                 "JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID)" + colorChoice);
@@ -172,7 +176,7 @@ public class AddCardsGUI implements ActionListener {
             }
         }
 
-        PreparedStatement maxID = conn.prepareStatement("SELECT MAX(ID) FROM CARDS");
+        PreparedStatement maxID = Main.conn.prepareStatement("SELECT MAX(ID) FROM CARDS");
         ResultSet getKey = maxID.executeQuery();
         if (getKey.next()) {
             lastCardPK = getKey.getInt(1);
@@ -180,7 +184,7 @@ public class AddCardsGUI implements ActionListener {
             lastCardPK = 0;
         }
 
-        PreparedStatement addCards = conn.prepareStatement("INSERT INTO CARDS(ID, DECKS_ID, REP_NUMBER, " +
+        PreparedStatement addCards = Main.conn.prepareStatement("INSERT INTO CARDS(ID, DECKS_ID, REP_NUMBER, " +
                 "EASY_FACTOR, IR_INTERVAL, LAST_REVIEW) VALUES (NULL, ?, 0, 2.5, 0, ?)");
         long currentTime = System.currentTimeMillis();
         for (int i = 0; i < movePkList.size(); i++) {
@@ -189,9 +193,9 @@ public class AddCardsGUI implements ActionListener {
             addCards.addBatch();
         }
         addCards.executeBatch();
-        conn.commit();
+        Main.conn.commit();
 
-        PreparedStatement cardsRel = conn.prepareStatement("INSERT INTO CARDS_TO_MOVES(CARDS_ID, MOVES_ID) " +
+        PreparedStatement cardsRel = Main.conn.prepareStatement("INSERT INTO CARDS_TO_MOVES(CARDS_ID, MOVES_ID) " +
                 "VALUES (?, ?)");
         // Last key is the last INTEGER PRIMARY KEY SQLite inserted into CARDS. We are adding one card for each move
         // in each line identified by the user, so movePkList.size() gives the correct number of new cards.
@@ -202,13 +206,13 @@ public class AddCardsGUI implements ActionListener {
         }
         cardsRel.executeBatch();
 
-        conn.commit();
+        Main.conn.commit();
     }
 
     public void deleteCards() throws SQLException {
         List<cardListItem> choices = cardsListComp.getSelectedValuesList();
-        PreparedStatement relDel = conn.prepareStatement("DELETE FROM CARDS_TO_MOVES WHERE CARDS_ID = ?");
-        PreparedStatement cardDel = conn.prepareStatement("DELETE FROM CARDS WHERE ID = ?");
+        PreparedStatement relDel = Main.conn.prepareStatement("DELETE FROM CARDS_TO_MOVES WHERE CARDS_ID = ?");
+        PreparedStatement cardDel = Main.conn.prepareStatement("DELETE FROM CARDS WHERE ID = ?");
         for (cardListItem choice : choices) {
             int cardPK = choice.getPk();
             relDel.setInt(1, cardPK);
@@ -218,7 +222,7 @@ public class AddCardsGUI implements ActionListener {
         }
         relDel.executeBatch();
         cardDel.executeBatch();
-        conn.commit();
+        Main.conn.commit();
     }
 
 
@@ -234,12 +238,22 @@ public class AddCardsGUI implements ActionListener {
                 throw new RuntimeException(ex);
             }
         }
+
         if (e.getSource() == deleteBtn) {
             try {
                 this.deleteCards();
                 this.queryCards();
                 this.updateCardsModel();
             } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        if (e.getSource() == backBtn) {
+            try {
+                modGUI.updateDeckModel();
+                controller.show(container, "mod");
+            } catch (SQLException | ClassNotFoundException ex) {
                 throw new RuntimeException(ex);
             }
         }

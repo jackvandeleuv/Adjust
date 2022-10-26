@@ -2,12 +2,8 @@ import java.sql.*;
 
 public final class InitDB  {
     public static void makeTables() throws ClassNotFoundException {
-        Class.forName("org.sqlite.JDBC");
-        String jbdcUrl = "jdbc:sqlite:database.db";
         try {
-            Connection connection = DriverManager.getConnection(jbdcUrl);
-            System.out.println("Successfully connected to DB!");
-            Statement stmt = connection.createStatement();
+            Statement stmt = Main.conn.createStatement();
 
 //            stmt.execute("DROP TABLE IF EXISTS LINES");
 //            StringBuilder linesQ = new StringBuilder();
@@ -57,8 +53,7 @@ public final class InitDB  {
             cardsMovesQ.append("FOREIGN KEY (MOVES_ID) REFERENCES MOVES(ID))");
             stmt.execute(cardsMovesQ.toString());
 
-            connection.close();
-            System.out.println("Connection closed!");
+            Main.conn.commit();
 
         } catch (SQLException e) {
             System.out.println("Error connecting to db");
@@ -104,11 +99,7 @@ public final class InitDB  {
 //    }
 
     public static void queryDB() throws ClassNotFoundException, SQLException {
-        Class.forName("org.sqlite.JDBC");
-        String jbdcUrl = "jdbc:sqlite:database.db";
-
-        Connection connection = DriverManager.getConnection(jbdcUrl);
-        Statement stmt = connection.createStatement();
+        Statement stmt = Main.conn.createStatement();
 
         stmt.execute("SELECT MOVES_ID, CARDS_ID FROM CARDS_TO_MOVES");
         ResultSet rs = stmt.getResultSet();
@@ -134,7 +125,8 @@ public final class InitDB  {
             System.out.println(rs3.getInt(1));
         }
 
-        connection.close();
+        Main.conn.commit();
+
         System.out.println("Connection closed!");
     }
 }

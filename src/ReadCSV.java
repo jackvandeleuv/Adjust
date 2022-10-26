@@ -60,10 +60,7 @@ public class ReadCSV {
     }
 
     public static void printDB() throws ClassNotFoundException, SQLException {
-        Class.forName("org.sqlite.JDBC");
-        String jbdcUrl = "jdbc:sqlite:database.db";
-        Connection conn = DriverManager.getConnection(jbdcUrl);
-        Statement stmt = conn.createStatement();
+        Statement stmt = Main.conn.createStatement();
 
         stmt.execute("SELECT COUNT(ID) FROM LINES");
         ResultSet rs = stmt.getResultSet();
@@ -71,7 +68,7 @@ public class ReadCSV {
             System.out.println(rs.getInt(1));
         }
 
-        conn.close();
+        Main.conn.close();
     }
 
 }

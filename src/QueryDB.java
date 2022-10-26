@@ -21,12 +21,8 @@ public final class QueryDB {
         toReviewQ.append("GROUP BY DECKS.ID ");
         toReviewQ.append("ORDER BY DECKS.NAME DESC ");
 
-        Class.forName("org.sqlite.JDBC");
-        String jbdcUrl = "jdbc:sqlite:database.db";
-        Connection conn = DriverManager.getConnection(jbdcUrl);
-        conn.setAutoCommit(false);
-        PreparedStatement totalsStmt = conn.prepareStatement(cardTotalsQ.toString());
-        PreparedStatement reviewStmt = conn.prepareStatement(toReviewQ.toString());
+        PreparedStatement totalsStmt = Main.conn.prepareStatement(cardTotalsQ.toString());
+        PreparedStatement reviewStmt = Main.conn.prepareStatement(toReviewQ.toString());
 
         long currentTime = System.currentTimeMillis();
         reviewStmt.setLong(1, currentTime);
@@ -48,7 +44,7 @@ public final class QueryDB {
             index = index + 1;
         }
 
-        conn.commit();
+        Main.conn.commit();
 
         return sumList;
     }

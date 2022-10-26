@@ -15,21 +15,18 @@ public final class ModDecksGUI implements ActionListener {
     private final JButton deleteBtn;
     private final JButton backBtn;
     private final JPanel pane;
-    private final Connection conn;
     private final CardLayout controller;
     private final JPanel container;
     private final MainGUI mainMenu;
     private final DefaultListModel<DeckListItem> decksModel;
     private final JList<DeckListItem> decksListComp;
+    private final JPanel cardsPane;
 
-    public ModDecksGUI(JPanel modPane, CardLayout outerController, JPanel outerContainer, MainGUI mainMenuGUI) throws SQLException, ClassNotFoundException {
-        Class.forName("org.sqlite.JDBC");
-        String jbdcUrl = "jdbc:sqlite:database.db";
-        conn = DriverManager.getConnection(jbdcUrl);
-        conn.setAutoCommit(false);
+    public ModDecksGUI(JPanel modPane, CardLayout outerController, JPanel outerContainer, MainGUI mainMenuGUI, JPanel outerCardsPane) throws SQLException, ClassNotFoundException {
         container = outerContainer;
         controller = outerController;
         pane = modPane;
+        cardsPane = outerCardsPane;
         mainMenu = mainMenuGUI;
 
         JLabel title = new JLabel("MODIFY DECKS");
@@ -55,7 +52,7 @@ public final class ModDecksGUI implements ActionListener {
 
         decksModel = new DefaultListModel<>();
         decksListComp = new JList<>(decksModel);
-        decksListComp.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        decksListComp.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         decksListComp.setFixedCellWidth(600);
         decksListComp.setFixedCellHeight(30);
         JScrollPane scroller = new JScrollPane(decksListComp);
@@ -65,12 +62,13 @@ public final class ModDecksGUI implements ActionListener {
 
         pane.add(header);
         pane.add(leftBar);
+        deckPane.add(decksListComp);
         pane.add(deckPane);
         pane.revalidate();
         pane.repaint();
     }
 
-    private synchronized void getUpdatedSummaries() throws SQLException {
+    private synchronized void updateDeckList() throws SQLException {
         StringBuilder cardTotalsQ = new StringBuilder();
         cardTotalsQ.append("SELECT DECKS.ID, COALESCE(COUNT(CARDS.ID), 0) ");
         cardTotalsQ.append("FROM DECKS LEFT JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID ");
@@ -85,14 +83,15 @@ public final class ModDecksGUI implements ActionListener {
         toReviewQ.append("GROUP BY DECKS.ID ");
         toReviewQ.append("ORDER BY DECKS.NAME DESC ");
 
-
         long currentTime = System.currentTimeMillis();
-        PreparedStatement toReviewStmt = conn.prepareStatement(toReviewQ.toString());
-        PreparedStatement cardTotalsStmt = conn.prepareStatement(cardTotalsQ.toString());
+        PreparedStatement toReviewStmt = Main.conn.prepareStatement(toReviewQ.toString());
+        PreparedStatement cardTotalsStmt = Main.conn.prepareStatement(cardTotalsQ.toString());
         toReviewStmt.setLong(1, currentTime);
 
         ResultSet rs1 = cardTotalsStmt.executeQuery();
         ResultSet rs2 = toReviewStmt.executeQuery();
+
+        deckList.clear();
         while (rs1.next()) {
             DeckListItem deck = new DeckListItem(rs1.getInt(1));
             deck.setCardTotal(rs1.getInt(2));
@@ -106,37 +105,39 @@ public final class ModDecksGUI implements ActionListener {
             deck.setReviewCount(rs2.getInt(2));
             index = index + 1;
         }
-
-        conn.commit();
+        Main.conn.commit();
     }
 
     public synchronized void updateDeckModel() throws SQLException, ClassNotFoundException {
-        this.getUpdatedSummaries();
+        this.updateDeckList();
 
         decksModel.removeAllElements();
         for (int i = 0; i < deckList.size(); i++) {
             decksModel.add(i, deckList.get(i));
         }
+        pane.revalidate();
+        pane.repaint();
     }
 
     private synchronized void deleteDeck(int deckPK) throws ClassNotFoundException, SQLException {
-        PreparedStatement deleteDeck = conn.prepareStatement("DELETE FROM DECKS WHERE ID = ?");
+        System.out.println("ModDecksGUI -> deleteDeck using sql");
+        PreparedStatement deleteDeck = Main.conn.prepareStatement("DELETE FROM DECKS WHERE ID = ?");
         deleteDeck.setInt(1, deckPK);
         deleteDeck.executeUpdate();
-        conn.commit();
+        Main.conn.commit();
 
         StringBuilder delRelQuery = new StringBuilder();
         delRelQuery.append("DELETE FROM CARDS_TO_MOVES WHERE CARDS_ID IN ( ");
         delRelQuery.append("SELECT ID FROM CARDS WHERE DECKS_ID = ?) ");
-        PreparedStatement delRels = conn.prepareStatement(delRelQuery.toString());
+        PreparedStatement delRels = Main.conn.prepareStatement(delRelQuery.toString());
         delRels.setInt(1, deckPK);
         delRels.executeUpdate();
-        conn.commit();
+        Main.conn.commit();
 
-        PreparedStatement deleteCards = conn.prepareStatement("DELETE FROM CARDS WHERE DECKS_ID = ?");
+        PreparedStatement deleteCards = Main.conn.prepareStatement("DELETE FROM CARDS WHERE DECKS_ID = ?");
         deleteCards.setInt(1, deckPK);
         deleteCards.executeUpdate();
-        conn.commit();
+        Main.conn.commit();
 
         this.updateDeckModel();
         pane.revalidate();
@@ -177,7 +178,15 @@ public final class ModDecksGUI implements ActionListener {
         }
 
         if (e.getSource() == modifyBtn) {
-
+            int index = decksListComp.getSelectedIndex();
+            DeckListItem deck = decksModel.getElementAt(index);
+            int deckPK = deck.getDeckPK();
+            try {
+                new AddCardsGUI(cardsPane, deckPK, container, controller, this);
+                controller.show(container, "cards");
+            } catch (ClassNotFoundException | SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
@@ -237,10 +246,10 @@ public final class ModDecksGUI implements ActionListener {
         private synchronized void createDeck(String name) throws ClassNotFoundException, SQLException {
             // Pane, conn, and data modified by makeDeckList are mutable and between threads, so the thread
             // needs to be synchronized.
-            PreparedStatement createStmt = conn.prepareStatement("INSERT INTO DECKS(ID, NAME) VALUES(NULL, ?)");
+            PreparedStatement createStmt = Main.conn.prepareStatement("INSERT INTO DECKS(ID, NAME) VALUES(NULL, ?)");
             createStmt.setString(1, name.strip());
             createStmt.executeUpdate();
-            conn.commit();
+            Main.conn.commit();
 
             ModDecksGUI.this.updateDeckModel();
             pane.revalidate();

@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -14,14 +16,13 @@ public class MainGUI implements ActionListener {
     private final DefaultListModel<QueryDB.DeckSummary> decksModel;
     private final JList<QueryDB.DeckSummary> decksListComp;
     private final JPanel mainPane;
+    private final JPanel cardsPane = new JPanel();
     private final JButton reviewBtn = new JButton("Review Deck");
     private final JButton modBtn = new JButton("Modify Decks");
     private final JPanel boardPane = new JPanel();
-
-
+    private final ModDecksGUI modGUI;
 
     public MainGUI() throws InterruptedException, SQLException, ClassNotFoundException {
-
         JFrame window = new JFrame();
         window.setSize(800, 500);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -49,14 +50,13 @@ public class MainGUI implements ActionListener {
         reviewBtn.addActionListener(this);
 
         modPane = new JPanel();
-        JPanel cardsPane = new JPanel();
 
         container.add(mainPane, "main");
         container.add(boardPane, "board");
         container.add(modPane, "mod");
-        container.add(cardsPane, "card");
+        container.add(cardsPane, "cards");
 
-        new ModDecksGUI(modPane, controller, container, this);
+        modGUI = new ModDecksGUI(modPane, controller, container, this, cardsPane);
 
         this.updateMainPane();
 
@@ -78,21 +78,27 @@ public class MainGUI implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == modBtn) {
-            controller.show(container, "mod");
-            container.revalidate();
-            container.repaint();
+            try {
+                modGUI.updateDeckModel();
+                controller.show(container, "mod");
+            } catch (SQLException | ClassNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
         }
 
         if (e.getSource() == reviewBtn) {
             int selIndex = decksListComp.getSelectedIndex();
-            QueryDB.DeckSummary selDeck = decksModel.get(selIndex);
-            int selDeckPK = selDeck.getDeckPK();
-            try {
-                new BoardGUI(selDeckPK, boardPane, container, controller, this);
-                controller.show(container, "board");
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
+            if (selIndex != -1) {
+                QueryDB.DeckSummary selDeck = decksModel.get(selIndex);
+                int selDeckPK = selDeck.getDeckPK();
+                try {
+                    new BoardGUI(selDeckPK, boardPane, container, controller, this);
+                    controller.show(container, "board");
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
+
         }
     }
 }

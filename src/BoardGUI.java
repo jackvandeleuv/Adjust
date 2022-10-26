@@ -35,7 +35,11 @@ public final class BoardGUI implements ActionListener {
         controller = outerController;
         pane = boardPane;
 
-        revEng = new ReviewEngine();
+        try {
+            revEng = new ReviewEngine();
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new RuntimeException(e);
+        }
         currentDeckId = newCurrentDeckId;
 
         boardWrapper = new JPanel();
@@ -195,7 +199,10 @@ public final class BoardGUI implements ActionListener {
     }
 
     public void promptUser(int deckId) {
+        System.out.println("promptUser triggered for deck:");
+        System.out.println(currentDeckId);
         try {
+            System.out.println("promptUser used revEng");
             ReviewEngine.ReviewCard revCard = revEng.getNextCard(deckId);
 
             if (revCard.getId() == -1) {
@@ -271,6 +278,7 @@ public final class BoardGUI implements ActionListener {
         for (int i = 0; i < selfRating.length; i++) {
             if (e.getSource() == selfRating[i]) {
                 try {
+                    System.out.println("Rating used revEng");
                     revEng.updateCard(i + 1, currentCardId);
                 } catch (SQLException | ClassNotFoundException ex) {
                     System.out.println(ex.getMessage());
