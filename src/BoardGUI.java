@@ -6,15 +6,15 @@ import javax.swing.*;
 
 public final class BoardGUI implements ActionListener {
     private final ReviewEngine revEng;
-    private final JPanel boardWrapper;
+    private final JPanel board;
     private final JButton[] selfRating;
     private final JButton showAnswer;
-    private final JPanel infoPanel;
+    private final JTextArea infoPanel;
     private final JPanel leftCol;
-    private final JPanel buttonBox;
+    private final JPanel buttonBox = new JPanel();
     private Square[] squares;
     private String lineNameMain;
-    private String lineNameVariation;
+    private String lineMoves;
     private String beforeFEN;
     private String afterFEN;
     private JButton leftArrow;
@@ -26,6 +26,7 @@ public final class BoardGUI implements ActionListener {
     private final JPanel container;
     private final CardLayout controller;
     private final MainMenuGUI mainMenu;
+    private final JPanel arrowBox = new JPanel();
 
     public BoardGUI(int newCurrentDeckId, JPanel boardPane, JPanel outerContainer, CardLayout outerController, MainMenuGUI mainGUI) throws InterruptedException {
         mainMenu = mainGUI;
@@ -40,20 +41,24 @@ public final class BoardGUI implements ActionListener {
         }
         currentDeckId = newCurrentDeckId;
 
-        boardWrapper = new JPanel();
+        board = new JPanel();
         GridLayout gLayout = new GridLayout(8, 8);
-        boardWrapper.setLayout(gLayout);
-        Dimension dimension = new Dimension(400, 400);
-        boardWrapper.setPreferredSize(dimension);
+        board.setLayout(gLayout);
+        board.setPreferredSize(new Dimension(450, 450));
         this.renderBoard();
 
-        leftCol = new JPanel();
-        leftCol.setLayout(new BoxLayout(leftCol, 1));
+        pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
+
+        JPanel boardWrapper = new JPanel();
+        boardWrapper.add(board);
+        boardWrapper.setMinimumSize(new Dimension(450, 900));
+        boardWrapper.setLayout(new GridBagLayout());
 
         selfRating = new JButton[6];
         for (int i = 0; i < selfRating.length; i++) {
             selfRating[i] = new JButton(String.valueOf(i));
             selfRating[i].addActionListener(this);
+            buttonBox.add(selfRating[i]);
         }
 
         showAnswer = new JButton("Show Answer");
@@ -63,17 +68,26 @@ public final class BoardGUI implements ActionListener {
         rightArrow.addActionListener(this);
         leftArrow = new JButton("<");
         leftArrow.addActionListener(this);
+        backBtn.addActionListener(this);
 
-        infoPanel = new JPanel();
-        buttonBox = new JPanel();
+        arrowBox.add(leftArrow);
+        arrowBox.add(rightArrow);
+
+        leftCol = new JPanel();
+        infoPanel = new JTextArea();
+        infoPanel.setEditable(false);
+
         leftCol.add(infoPanel);
+        leftCol.add(arrowBox);
         leftCol.add(buttonBox);
+        leftCol.add(showAnswer);
+        leftCol.add(backBtn);
+
+        leftCol.setLayout(new BoxLayout(leftCol, BoxLayout.Y_AXIS));
+        leftCol.setMinimumSize(new Dimension(150, 900));
 
         pane.add(leftCol);
-        pane.add(backBtn);
-        backBtn.addActionListener(this);
         pane.add(boardWrapper);
-        pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
 
         this.promptUser(currentDeckId);
     }
@@ -87,16 +101,16 @@ public final class BoardGUI implements ActionListener {
                 panel.setBackground(Color.WHITE);
             }
             if (i % 2 == 0 && offset) {
-                panel.setBackground(Color.GREEN);
+                panel.setBackground(Color.decode("#428D44"));
             }
             if (i % 2 != 0 && !offset) {
-                panel.setBackground(Color.GREEN);
+                panel.setBackground(Color.decode("#428D44"));
             }
             if (i % 2 != 0 && offset) {
                 panel.setBackground(Color.WHITE);
             }
             squares[i - 1] = new Square(panel);
-            boardWrapper.add(panel);
+            board.add(panel);
 
             if (i % 8 == 0) {
                 offset = !offset;
@@ -129,8 +143,8 @@ public final class BoardGUI implements ActionListener {
                 squareNum = squareNum + 1;
             }
         }
-        boardWrapper.revalidate();
-        boardWrapper.repaint();
+        board.revalidate();
+        board.repaint();
     }
 
     private Piece charToPiece(char c, int newPos) {
@@ -197,10 +211,7 @@ public final class BoardGUI implements ActionListener {
     }
 
     public void promptUser(int deckId) {
-        System.out.println("promptUser triggered for deck:");
-        System.out.println(currentDeckId);
         try {
-            System.out.println("promptUser used revEng");
             ReviewEngine.ReviewCard revCard = revEng.getNextCard(deckId);
 
             if (revCard.getId() == -1) {
@@ -211,7 +222,8 @@ public final class BoardGUI implements ActionListener {
             beforeFEN = revCard.getBeforeFEN();
             afterFEN = revCard.getAfterFEN();
             lineNameMain = revCard.getName();
-            lineNameVariation = revCard.getLine();
+            lineMoves = revCard.getLine();
+
         } catch (SQLException | ClassNotFoundException ex) {
             System.out.println(ex.getMessage());
         }
@@ -219,35 +231,33 @@ public final class BoardGUI implements ActionListener {
         this.paintFEN(beforeFEN);
 
         infoPanel.removeAll();
-        JLabel toMoveLabel = new JLabel("WHITE TO MOVE");
-        infoPanel.add(toMoveLabel);
+        infoPanel.append(lineNameMain + "\n" + lineMoves + "WHITE TO MOVE");
 
-        buttonBox.removeAll();
-        buttonBox.add(showAnswer);
+        showAnswer.setEnabled(true);
 
-        leftCol.revalidate();
-        leftCol.repaint();
+        rightArrow.setEnabled(false);
+        leftArrow.setEnabled(false);
+        for (JButton jb : selfRating) {
+            jb.setEnabled(false);
+        }
+
+        pane.revalidate();
+        pane.repaint();
     }
 
     public void showResults() {
         this.paintFEN(afterFEN);
 
-        infoPanel.removeAll();
-        StringBuilder lineName = new StringBuilder();
-        lineName.append(lineNameMain);
-        lineName.append(" ");
-        lineName.append(lineNameVariation);
-        JLabel lineLabel = new JLabel(lineName.toString());
-        infoPanel.add(lineLabel);
+        showAnswer.setEnabled(false);
 
-        buttonBox.removeAll();
-        buttonBox.add(leftArrow);
-        buttonBox.add(rightArrow);
-        for (int i = 0; i < selfRating.length; i++) {
-            buttonBox.add(selfRating[i]);
+        rightArrow.setEnabled(true);
+        leftArrow.setEnabled(true);
+        for (JButton jb : selfRating) {
+            jb.setEnabled(true);
         }
-        leftCol.revalidate();
-        leftCol.repaint();
+
+        pane.revalidate();
+        pane.repaint();
     }
 
     @Override

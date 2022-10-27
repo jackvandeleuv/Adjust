@@ -51,12 +51,6 @@ public final class ReviewEngine {
         Main.conn.commit();
 
         double[] memoResult = this.superMemoAlgo(grade, repNum, easFactor, interval);
-//
-//        System.out.println(cardId);
-//        for (double d : memoResult) {
-//            System.out.println(d);
-//        }
-//        System.out.println("\n");
 
         StringBuilder query2 = new StringBuilder();
         query2.append("UPDATE CARDS ");
@@ -73,11 +67,6 @@ public final class ReviewEngine {
         preStmt2.setDouble(3, memoResult[2]);
         preStmt2.setLong(4, currentTime);
         preStmt2.setInt(5, cardId);
-
-//        System.out.println(repNum);
-//        System.out.println(easFactor);
-//        System.out.println(interval);
-//        System.out.println(cardId);
 
         preStmt2.executeUpdate();
         Main.conn.commit();

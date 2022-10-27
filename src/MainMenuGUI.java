@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,7 +9,6 @@ import java.util.List;
 
 public final class MainMenuGUI implements ActionListener {
     List<DeckListItem> deckList = new ArrayList<>();
-    private final JPanel deckPane = new JPanel();
     private final JButton createBtn = new JButton("CREATE");
     private final JButton modifyBtn = new JButton("MODIFY");
     private final JButton renameBtn = new JButton("RENAME");
@@ -17,8 +17,8 @@ public final class MainMenuGUI implements ActionListener {
     private final JPanel mainPane = new JPanel();
     private final CardLayout controller = new CardLayout();
     private final JPanel container = new JPanel();
-    private final DefaultListModel<DeckListItem> decksModel;
-    private final JList<DeckListItem> decksListComp;
+    private final DefaultListModel<DeckListItem> decksModel = new DefaultListModel<>();
+    private final JList<DeckListItem> decksListComp = new JList<>(decksModel);
     private final JPanel cardsPane = new JPanel();
     private final JPanel boardPane = new JPanel();
 
@@ -30,39 +30,52 @@ public final class MainMenuGUI implements ActionListener {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         container.setLayout(controller);
-        window.add(container);
-
         container.add(mainPane, "main");
         container.add(boardPane, "board");
         container.add(cardsPane, "cards");
+        window.add(container);
 
-        JLabel title = new JLabel("MODIFY DECKS");
+        BoxLayout boxLayout = new BoxLayout(mainPane, BoxLayout.Y_AXIS);
+        mainPane.setLayout(boxLayout);
+        mainPane.setBorder(new EmptyBorder(0, 15, 0, 15));
+
+        JPanel titlePane = new JPanel();
+        titlePane.setPreferredSize(new Dimension(800, 120));
+        JLabel title = new JLabel("ADJUST");
+        title.setFont(new Font("Sans", Font.BOLD, 64));
+        titlePane.add(title);
+
         createBtn.addActionListener(this);
         modifyBtn.addActionListener(this);
         renameBtn.addActionListener(this);
         deleteBtn.addActionListener(this);
         reviewBtn.addActionListener(this);
 
-        JPanel header = new JPanel();
-        header.add(title);
-        JPanel leftBar = new JPanel();
-        leftBar.add(reviewBtn);
-        leftBar.add(createBtn);
-        leftBar.add(modifyBtn);
-        leftBar.add(renameBtn);
-        leftBar.add(deleteBtn);
+        createBtn.setPreferredSize(new Dimension(120, 45));
+        modifyBtn.setPreferredSize(new Dimension(120, 45));
+        renameBtn.setPreferredSize(new Dimension(120, 45));
+        deleteBtn.setPreferredSize(new Dimension(120, 45));
+        reviewBtn.setPreferredSize(new Dimension(120, 45));
 
-        decksModel = new DefaultListModel<>();
-        decksListComp = new JList<>(decksModel);
+        JPanel btnPane = new JPanel();
+        btnPane.setLayout(new GridBagLayout());
+
+        btnPane.setPreferredSize(new Dimension(800, 100));
+        btnPane.add(createBtn);
+        btnPane.add(reviewBtn);
+        btnPane.add(modifyBtn);
+        btnPane.add(renameBtn);
+        btnPane.add(deleteBtn);
+
         decksListComp.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        decksListComp.setFixedCellWidth(600);
-        decksListComp.setFixedCellHeight(30);
+        decksListComp.setFixedCellWidth(800);
+        decksListComp.setFixedCellHeight(70);
         JScrollPane scroller = new JScrollPane(decksListComp);
-        scroller.setSize(300, 300);
+        scroller.setPreferredSize(new Dimension(800, 350));
 
-        mainPane.add(header);
-        mainPane.add(leftBar);
-        mainPane.add(decksListComp);
+        mainPane.add(titlePane);
+        mainPane.add(scroller);
+        mainPane.add(btnPane);
 
         this.updateDeckModel();
 
