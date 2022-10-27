@@ -16,7 +16,7 @@ public final class Rook extends Piece {
     }
 
     @Override
-    public ImageIcon getImage() throws Exception {
+    public ImageIcon getImage() throws NoSuchFieldException {
         if (super.getTeam() == 'w') {
             ImageIcon image = new ImageIcon("img/Chess_rlt45.svg.png");
             return image;
@@ -25,7 +25,7 @@ public final class Rook extends Piece {
             ImageIcon image = new ImageIcon("img/Chess_rdt45.svg.png");
             return image;
         }
-        throw new Exception("This piece has no color/team!");
+        throw new NoSuchFieldException("This piece has no color/team!");
     }
 
 }

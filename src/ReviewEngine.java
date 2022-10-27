@@ -8,7 +8,7 @@ public final class ReviewEngine {
     public ReviewEngine() throws ClassNotFoundException, SQLException {}
     public ReviewCard getNextCard(int deckId) throws SQLException, ClassNotFoundException {
         StringBuilder query = new StringBuilder();
-        query.append("SELECT CARDS.ID, LINES.NAME, LINES.LINE, MOVES.BEFORE_FEN, MOVES.AFTER_FEN ");
+        query.append("SELECT CARDS.ID, LINES.NAME, LINES.LINE, MOVES.BEFORE_FEN, MOVES.AFTER_FEN, MOVES.ORDER_IN_LINE ");
         query.append("FROM CARDS JOIN CARDS_TO_MOVES ON CARDS.ID = CARDS_TO_MOVES.CARDS_ID ");
         query.append("JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID ");
         query.append("JOIN LINES ON MOVES.LINES_ID = LINES.ID ");
@@ -28,13 +28,14 @@ public final class ReviewEngine {
         String line = rs.getString("LINE");
         String beforeFEN = rs.getString("BEFORE_FEN");
         String afterFEN = rs.getString("AFTER_FEN");
+        int orderInLine = rs.getInt("ORDER_IN_LINE");
 
         Main.conn.commit();
 
         if (name != null && line != null && beforeFEN != null && afterFEN != null) {
-            return new ReviewCard(id, name, line, beforeFEN, afterFEN);
+            return new ReviewCard(id, name, line, beforeFEN, afterFEN, orderInLine);
         } else {
-            return new ReviewCard(-1, "", "", "", "");
+            return new ReviewCard(-1, "", "", "", "", -1);
         }
     }
 
@@ -100,13 +101,15 @@ public final class ReviewEngine {
         private final String line;
         private final String beforeFEN;
         private final String afterFEN;
+        private final int orderInLine;
 
-        ReviewCard(int newId, String newName, String newLine, String newBeforeFEN, String newAfterFEN) {
+        ReviewCard(int newId, String newName, String newLine, String newBeforeFEN, String newAfterFEN, int newOrderInLine) {
             id = newId;
             name = newName;
             line = newLine;
             beforeFEN = newBeforeFEN;
             afterFEN = newAfterFEN;
+            orderInLine = newOrderInLine;
         }
 
         public int getId() {
@@ -128,5 +131,7 @@ public final class ReviewEngine {
         public String getAfterFEN() {
             return afterFEN;
         }
+
+        public int getOrderInLine() {return orderInLine;}
     }
 }

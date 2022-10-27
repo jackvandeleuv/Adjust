@@ -16,16 +16,16 @@ public final class King extends Piece {
     }
 
     @Override
-    public ImageIcon getImage() throws Exception {
+    public ImageIcon getImage() throws NoSuchFieldException {
         if (super.getTeam() == 'w') {
-            ImageIcon image = new ImageIcon("img/Chess_plt45.svg.png");
+            ImageIcon image = new ImageIcon("img/Chess_klt45.svg.png");
             return image;
         }
         if (super.getTeam() == 'b') {
-            ImageIcon image = new ImageIcon("img/Chess_pdt45.svg.png");
+            ImageIcon image = new ImageIcon("img/Chess_kdt45.svg.png");
             return image;
         }
-        throw new Exception("This piece has no color/team!");
+        throw new NoSuchFieldException("This piece has no color/team!");
     }
 
 }

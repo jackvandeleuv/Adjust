@@ -19,6 +19,5 @@ public class Main {
             System.out.println("Could not successfully start program");
             System.out.println(ex.getMessage());
         }
-        InitDB.queryDB();
     }
 }
