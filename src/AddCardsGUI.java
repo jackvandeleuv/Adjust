@@ -176,7 +176,7 @@ public class AddCardsGUI implements ActionListener {
                 "JOIN CARDS_TO_MOVES ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID " +
                 "JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID " +
                 "WHERE DECKS_ID = ?)" + colorChoice + " AND BEFORE_FEN NOT IN (" +
-                "SELECT BEFORE_FEN FROM MOVES " +
+                "SELECT MOVES.BEFORE_FEN FROM MOVES " +
                 "JOIN CARDS_TO_MOVES ON MOVES.ID = CARDS_TO_MOVES.MOVES_ID " +
                 "JOIN CARDS ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID " +
                 "WHERE CARDS.DECKS_ID = ?)");
