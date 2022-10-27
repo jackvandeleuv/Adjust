@@ -19,13 +19,13 @@ public class AddCardsGUI implements ActionListener {
     private final JButton deleteBtn;
     private int lastCardPK;
     private final JComboBox<String> clrSel;
-    private final ModDecksGUI modGUI;
+    private final MainMenuGUI mainMenu;
     private final CardLayout controller;
     private final JPanel container;
     private final JButton backBtn = new JButton("Back");
 
-    public AddCardsGUI(JPanel cardsPane, int deckPK, JPanel outerContainer, CardLayout outerController, ModDecksGUI modGUIObj) throws ClassNotFoundException, SQLException {
-        modGUI = modGUIObj;
+    public AddCardsGUI(JPanel cardsPane, int deckPK, JPanel outerContainer, CardLayout outerController, MainMenuGUI modGUIObj) throws ClassNotFoundException, SQLException {
+        mainMenu = modGUIObj;
         controller = outerController;
         container = outerContainer;
         pane = cardsPane;
@@ -258,8 +258,8 @@ public class AddCardsGUI implements ActionListener {
 
         if (e.getSource() == backBtn) {
             try {
-                modGUI.updateDeckModel();
-                controller.show(container, "mod");
+                mainMenu.updateDeckModel();
+                controller.show(container, "main");
             } catch (SQLException | ClassNotFoundException ex) {
                 throw new RuntimeException(ex);
             }

@@ -14,7 +14,7 @@ public class Main {
             String jbdcUrl = "jdbc:sqlite:database.db";
             conn = DriverManager.getConnection(jbdcUrl);
             conn.setAutoCommit(false);
-            new MainGUI();
+            new MainMenuGUI();
         } catch (ClassNotFoundException | SQLException  ex) {
             System.out.println("Could not successfully start program");
             System.out.println(ex.getMessage());

@@ -6,49 +6,51 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class ModDecksGUI implements ActionListener {
+public final class MainMenuGUI implements ActionListener {
     List<DeckListItem> deckList = new ArrayList<>();
     private final JPanel deckPane = new JPanel();
-    private final JButton createBtn;
-    private final JButton modifyBtn;
-    private final JButton renameBtn;
-    private final JButton deleteBtn;
-    private final JButton backBtn;
-    private final JPanel pane;
-    private final CardLayout controller;
-    private final JPanel container;
-    private final MainGUI mainMenu;
+    private final JButton createBtn = new JButton("CREATE");
+    private final JButton modifyBtn = new JButton("MODIFY");
+    private final JButton renameBtn = new JButton("RENAME");
+    private final JButton deleteBtn = new JButton("DELETE");
+    private final JButton reviewBtn = new JButton("REVIEW");
+    private final JPanel mainPane = new JPanel();
+    private final CardLayout controller = new CardLayout();
+    private final JPanel container = new JPanel();
     private final DefaultListModel<DeckListItem> decksModel;
     private final JList<DeckListItem> decksListComp;
-    private final JPanel cardsPane;
+    private final JPanel cardsPane = new JPanel();
+    private final JPanel boardPane = new JPanel();
 
-    public ModDecksGUI(JPanel modPane, CardLayout outerController, JPanel outerContainer, MainGUI mainMenuGUI, JPanel outerCardsPane) throws SQLException, ClassNotFoundException {
-        container = outerContainer;
-        controller = outerController;
-        pane = modPane;
-        cardsPane = outerCardsPane;
-        mainMenu = mainMenuGUI;
+    public MainMenuGUI() throws SQLException, ClassNotFoundException {
+        JFrame window = new JFrame();
+        window.setSize(1000, 600);
+        // Passing null centers the JFrame in the middle of the screen.
+        window.setLocationRelativeTo(null);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        container.setLayout(controller);
+        window.add(container);
+
+        container.add(mainPane, "main");
+        container.add(boardPane, "board");
+        container.add(cardsPane, "cards");
 
         JLabel title = new JLabel("MODIFY DECKS");
-        createBtn = new JButton("CREATE");
         createBtn.addActionListener(this);
-        modifyBtn = new JButton("MODIFY");
         modifyBtn.addActionListener(this);
-        renameBtn = new JButton("RENAME");
         renameBtn.addActionListener(this);
-        deleteBtn = new JButton("DELETE");
         deleteBtn.addActionListener(this);
-        backBtn = new JButton("BACK");
-        backBtn.addActionListener(this);
+        reviewBtn.addActionListener(this);
 
         JPanel header = new JPanel();
         header.add(title);
         JPanel leftBar = new JPanel();
+        leftBar.add(reviewBtn);
         leftBar.add(createBtn);
         leftBar.add(modifyBtn);
         leftBar.add(renameBtn);
         leftBar.add(deleteBtn);
-        leftBar.add(backBtn);
 
         decksModel = new DefaultListModel<>();
         decksListComp = new JList<>(decksModel);
@@ -58,14 +60,13 @@ public final class ModDecksGUI implements ActionListener {
         JScrollPane scroller = new JScrollPane(decksListComp);
         scroller.setSize(300, 300);
 
+        mainPane.add(header);
+        mainPane.add(leftBar);
+        mainPane.add(decksListComp);
+
         this.updateDeckModel();
 
-        pane.add(header);
-        pane.add(leftBar);
-        deckPane.add(decksListComp);
-        pane.add(deckPane);
-        pane.revalidate();
-        pane.repaint();
+        window.setVisible(true);
     }
 
     private synchronized void updateDeckList() throws SQLException {
@@ -115,8 +116,8 @@ public final class ModDecksGUI implements ActionListener {
         for (int i = 0; i < deckList.size(); i++) {
             decksModel.add(i, deckList.get(i));
         }
-        pane.revalidate();
-        pane.repaint();
+        mainPane.revalidate();
+        mainPane.repaint();
     }
 
     private synchronized void deleteDeck(int deckPK) throws ClassNotFoundException, SQLException {
@@ -140,8 +141,8 @@ public final class ModDecksGUI implements ActionListener {
         Main.conn.commit();
 
         this.updateDeckModel();
-        pane.revalidate();
-        pane.repaint();
+        mainPane.revalidate();
+        mainPane.repaint();
     }
 
     private void createDeck(String name) throws ClassNotFoundException, SQLException {
@@ -153,8 +154,8 @@ public final class ModDecksGUI implements ActionListener {
         Main.conn.commit();
 
         this.updateDeckModel();
-        pane.revalidate();
-        pane.repaint();
+        mainPane.revalidate();
+        mainPane.repaint();
     }
 
     private void renameDeck(int pk, String name) throws ClassNotFoundException, SQLException {
@@ -167,8 +168,8 @@ public final class ModDecksGUI implements ActionListener {
         Main.conn.commit();
 
         this.updateDeckModel();
-        pane.revalidate();
-        pane.repaint();
+        mainPane.revalidate();
+        mainPane.repaint();
     }
 
     @Override
@@ -215,15 +216,6 @@ public final class ModDecksGUI implements ActionListener {
             }
         }
 
-        if (e.getSource() == backBtn) {
-            try {
-                mainMenu.updateMainPane();
-                controller.show(container, "main");
-            } catch (SQLException | ClassNotFoundException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
         if (e.getSource() == modifyBtn) {
             int index = decksListComp.getSelectedIndex();
             if (index != -1) {
@@ -237,6 +229,22 @@ public final class ModDecksGUI implements ActionListener {
                     throw new RuntimeException(ex);
                 }
             }
+        }
+
+        if (e.getSource() == reviewBtn) {
+            int selIndex = decksListComp.getSelectedIndex();
+            if (selIndex != -1) {
+                DeckListItem selDeck = decksModel.get(selIndex);
+                int selDeckPK = selDeck.getDeckPK();
+                try {
+                    boardPane.removeAll();
+                    new BoardGUI(selDeckPK, boardPane, container, controller, this);
+                    controller.show(container, "board");
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+
         }
     }
 

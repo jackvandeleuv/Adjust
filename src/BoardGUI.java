@@ -3,8 +3,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import javax.swing.*;
-import java.util.*;
-import java.util.List;
 
 public final class BoardGUI implements ActionListener {
     private final ReviewEngine revEng;
@@ -27,10 +25,10 @@ public final class BoardGUI implements ActionListener {
     private final JButton backBtn = new JButton("Back");
     private final JPanel container;
     private final CardLayout controller;
-    private final MainGUI mainMenu;
+    private final MainMenuGUI mainMenu;
 
-    public BoardGUI(int newCurrentDeckId, JPanel boardPane, JPanel outerContainer, CardLayout outerController, MainGUI mainMenuGUI) throws InterruptedException {
-        mainMenu = mainMenuGUI;
+    public BoardGUI(int newCurrentDeckId, JPanel boardPane, JPanel outerContainer, CardLayout outerController, MainMenuGUI mainGUI) throws InterruptedException {
+        mainMenu = mainGUI;
         container = outerContainer;
         controller = outerController;
         pane = boardPane;
@@ -268,11 +266,11 @@ public final class BoardGUI implements ActionListener {
 
         if (e.getSource() == backBtn) {
             try {
-                mainMenu.updateMainPane();
+                mainMenu.updateDeckModel();
+                controller.show(container, "main");
             } catch (SQLException | ClassNotFoundException ex) {
                 throw new RuntimeException(ex);
             }
-            controller.show(container, "main");
         }
 
         for (int i = 0; i < selfRating.length; i++) {
