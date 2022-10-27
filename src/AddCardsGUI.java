@@ -168,9 +168,12 @@ public class AddCardsGUI implements ActionListener {
             colorChoice = " AND MOVES.ORDER_IN_LINE % 2 == 0 ";
         }
 
+        System.out.println("Color choice:");
+        System.out.println(colorChoice);
+
         List<Integer> movePkList = new ArrayList<>();
         // Get all the line ids identified by the user that are not already in a deck.
-        PreparedStatement movesStmt = Main.conn.prepareStatement("SELECT ID FROM MOVES " +
+        PreparedStatement movesStmt = Main.conn.prepareStatement("SELECT MOVES.ID FROM MOVES " +
                 "WHERE LINES_ID = ? AND LINES_ID NOT IN (" +
                 "SELECT MOVES.LINES_ID FROM CARDS " +
                 "JOIN CARDS_TO_MOVES ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID " +
@@ -191,6 +194,8 @@ public class AddCardsGUI implements ActionListener {
             }
         }
 
+
+
         PreparedStatement maxID = Main.conn.prepareStatement("SELECT MAX(ID) FROM CARDS");
         ResultSet getKey = maxID.executeQuery();
         if (getKey.next()) {
@@ -203,6 +208,12 @@ public class AddCardsGUI implements ActionListener {
                 "EASY_FACTOR, IR_INTERVAL, LAST_REVIEW) VALUES (NULL, ?, 0, 2.5, 0, ?)");
         long currentTime = System.currentTimeMillis();
         for (int i = 0; i < movePkList.size(); i++) {
+            System.out.println("+++++++++++++++");
+            System.out.println("Insering into cards (deckId, currentTime):");
+            System.out.println(deckID);
+            System.out.println(currentTime);
+            System.out.println("+++++++++++++++");
+
             addCards.setInt(1, deckID);
             addCards.setLong(2, currentTime);
             addCards.addBatch();
@@ -215,6 +226,12 @@ public class AddCardsGUI implements ActionListener {
         // Last key is the last INTEGER PRIMARY KEY SQLite inserted into CARDS. We are adding one card for each move
         // in each line identified by the user, so movePkList.size() gives the correct number of new cards.
         for (int i = 0; i < movePkList.size(); i++) {
+            System.out.println("+++++++++++++++");
+            System.out.println("Inserting into CARDS_TO_MOVES, cards_id, moves_id:");
+            System.out.println(lastCardPK + 1 + i);
+            System.out.println(movePkList.get(i));
+            System.out.println("+++++++++++++++");
+
             cardsRel.setInt(1, lastCardPK + 1 + i);
             cardsRel.setInt(2, movePkList.get(i));
             cardsRel.addBatch();

@@ -121,10 +121,15 @@ public final class InitDB  {
         stmt.execute("SELECT ID, DECKS_ID, IR_INTERVAL FROM CARDS");
         ResultSet rs2 = stmt.getResultSet();
         while (rs2.next()) {
+            System.out.println("+++++++++++++++");
+            System.out.println("CARDS.ID:");
             System.out.println(rs2.getInt(1));
+            System.out.println("DECKS_ID:");
             System.out.println(rs2.getInt(2));
             System.out.println("IR_INTERVAL:");
             System.out.println(rs2.getInt(3));
+            System.out.println("+++++++++++++++");
+
         }
 
         System.out.println("DECKS:");

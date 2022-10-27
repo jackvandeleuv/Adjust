@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.ArrayList;
 
 public final class ReviewEngine {
-    public ReviewEngine() throws ClassNotFoundException, SQLException {}
-    public ReviewCard getNextCard(int deckId) throws SQLException, ClassNotFoundException {
+    private final int deckId;
+    public ReviewEngine(int newDeckId) throws ClassNotFoundException, SQLException {deckId = newDeckId;}
+    public ReviewCard getNextCard() throws SQLException, ClassNotFoundException {
         StringBuilder query = new StringBuilder();
         query.append("SELECT CARDS.ID, LINES.NAME, LINES.LINE, MOVES.BEFORE_FEN, MOVES.AFTER_FEN, MOVES.ORDER_IN_LINE ");
         query.append("FROM CARDS JOIN CARDS_TO_MOVES ON CARDS.ID = CARDS_TO_MOVES.CARDS_ID ");
@@ -61,6 +62,14 @@ public final class ReviewEngine {
         query2.append("LAST_REVIEW = ? ");
         query2.append("WHERE ID = ? ");
 
+        System.out.println("++++++++++++++++");
+        System.out.println("Updating card...");
+        System.out.println(memoResult[0]);
+        System.out.println(memoResult[1]);
+        System.out.println(memoResult[2]);
+        System.out.println(cardId);
+        System.out.println("++++++++++++++++");
+
         PreparedStatement preStmt2 = Main.conn.prepareStatement(query2.toString());
         long currentTime = System.currentTimeMillis();
         preStmt2.setDouble(1, memoResult[0]);
@@ -110,6 +119,12 @@ public final class ReviewEngine {
             beforeFEN = newBeforeFEN;
             afterFEN = newAfterFEN;
             orderInLine = newOrderInLine;
+            System.out.println("RevCard created");
+            System.out.println(newId);
+            System.out.println(newName);
+            System.out.println(beforeFEN);
+            System.out.println(afterFEN);
+
         }
 
         public int getId() {

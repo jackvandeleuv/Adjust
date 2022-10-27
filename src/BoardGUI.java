@@ -37,12 +37,13 @@ public final class BoardGUI implements ActionListener {
         controller = outerController;
         pane = boardPane;
 
+        currentDeckId = newCurrentDeckId;
         try {
-            revEng = new ReviewEngine();
+            revEng = new ReviewEngine(currentDeckId);
         } catch (ClassNotFoundException | SQLException e) {
+            System.out.println("Could not instantiate ReviewEngine");
             throw new RuntimeException(e);
         }
-        currentDeckId = newCurrentDeckId;
 
         board = new JPanel();
         GridLayout gLayout = new GridLayout(8, 8);
@@ -78,6 +79,7 @@ public final class BoardGUI implements ActionListener {
         leftCol = new JPanel();
         infoPanel = new JTextArea();
         infoPanel.setEditable(false);
+        infoPanel.setFont(new Font("Sans", Font.PLAIN, 12));
 
         leftCol.add(infoPanel);
         leftCol.add(arrowBox);
@@ -227,10 +229,10 @@ public final class BoardGUI implements ActionListener {
 
     public void promptUser(int deckId) {
         try {
-            ReviewEngine.ReviewCard revCard = revEng.getNextCard(deckId);
+            ReviewEngine.ReviewCard revCard = revEng.getNextCard();
 
             if (revCard.getId() == -1) {
-                return;
+                throw new RuntimeException("ReviewEngine failed to return a valid ReviewCard object.");
             }
 
             currentCardId = revCard.getId();
@@ -238,6 +240,10 @@ public final class BoardGUI implements ActionListener {
             afterFEN = revCard.getAfterFEN();
             lineNameMain = revCard.getName();
             orderInLine = revCard.getOrderInLine();
+            System.out.println(currentCardId);
+            System.out.println(beforeFEN);
+            System.out.println(afterFEN);
+            System.out.println(lineNameMain);
 
         } catch (SQLException | ClassNotFoundException ex) {
             System.out.println("promptUser encountered an error");
@@ -286,6 +292,11 @@ public final class BoardGUI implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        System.out.println("beforeFEN:");
+        System.out.println(beforeFEN);
+        System.out.println("afterFEN:");
+        System.out.println(afterFEN);
+
         if (e.getSource() == showAnswer) {
             this.showResults();
         }
