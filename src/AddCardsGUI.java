@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,7 +38,7 @@ public class AddCardsGUI implements ActionListener {
         linesListComp.setFixedCellWidth(600);
         linesListComp.setFixedCellHeight(30);
         JScrollPane totalScroller = new JScrollPane(linesListComp);
-        totalScroller.setSize(600, 400);
+        totalScroller.setPreferredSize(new Dimension(900, 230));
         this.queryTotalLines("", "");
         this.updateLineModel();
 
@@ -55,18 +56,24 @@ public class AddCardsGUI implements ActionListener {
         cardsListComp.setFixedCellWidth(600);
         cardsListComp.setFixedCellHeight(30);
         JScrollPane cardsScroller = new JScrollPane(cardsListComp);
-        cardsScroller.setSize(600, 250);
+        cardsScroller.setPreferredSize(new Dimension(900, 230));
         this.queryCards();
         this.updateCardsModel();
 
         backBtn.addActionListener(this);
 
+        pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
+        pane.setBorder(new EmptyBorder(0, 15, 0, 15));
+
+        JPanel btnBox = new JPanel();
+        btnBox.add(backBtn);
+        btnBox.add(deleteBtn);
+        btnBox.add(makeCardsBtn);
+        btnBox.add(clrSel);
+
         pane.add(totalScroller);
-        pane.add(makeCardsBtn);
-        pane.add(clrSel);
-        pane.add(deleteBtn);
+        pane.add(btnBox);
         pane.add(cardsScroller);
-        pane.add(backBtn);
         pane.revalidate();
         pane.repaint();
     }

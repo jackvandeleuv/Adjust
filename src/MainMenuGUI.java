@@ -82,7 +82,7 @@ public final class MainMenuGUI implements ActionListener {
         window.setVisible(true);
     }
 
-    private synchronized void updateDeckList() throws SQLException {
+    private void updateDeckList() throws SQLException {
         StringBuilder cardTotalsQ = new StringBuilder();
         cardTotalsQ.append("SELECT DECKS.ID, COALESCE(COUNT(CARDS.ID), 0) ");
         cardTotalsQ.append("FROM DECKS LEFT JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID ");
@@ -122,7 +122,7 @@ public final class MainMenuGUI implements ActionListener {
         Main.conn.commit();
     }
 
-    public synchronized void updateDeckModel() throws SQLException, ClassNotFoundException {
+    public void updateDeckModel() throws SQLException, ClassNotFoundException {
         this.updateDeckList();
 
         decksModel.removeAllElements();
@@ -133,8 +133,7 @@ public final class MainMenuGUI implements ActionListener {
         mainPane.repaint();
     }
 
-    private synchronized void deleteDeck(int deckPK) throws ClassNotFoundException, SQLException {
-        System.out.println("ModDecksGUI -> deleteDeck using sql");
+    private void deleteDeck(int deckPK) throws ClassNotFoundException, SQLException {
         PreparedStatement deleteDeck = Main.conn.prepareStatement("DELETE FROM DECKS WHERE ID = ?");
         deleteDeck.setInt(1, deckPK);
         deleteDeck.executeUpdate();
@@ -159,8 +158,6 @@ public final class MainMenuGUI implements ActionListener {
     }
 
     private void createDeck(String name) throws ClassNotFoundException, SQLException {
-        // Pane, conn, and data modified by makeDeckList are mutable and between threads, so the thread
-        // needs to be synchronized.
         PreparedStatement createStmt = Main.conn.prepareStatement("INSERT INTO DECKS(ID, NAME) VALUES(NULL, ?)");
         createStmt.setString(1, name.strip());
         createStmt.executeUpdate();
@@ -172,8 +169,6 @@ public final class MainMenuGUI implements ActionListener {
     }
 
     private void renameDeck(int pk, String name) throws ClassNotFoundException, SQLException {
-        // Pane, conn, and data modified by makeDeckList are mutable and between threads, so the thread
-        // needs to be synchronized.
         PreparedStatement renameStmt = Main.conn.prepareStatement("UPDATE DECKS SET NAME = ? WHERE ID = ?");
         renameStmt.setString(1, name.strip());
         renameStmt.setInt(2, pk);
@@ -277,7 +272,9 @@ public final class MainMenuGUI implements ActionListener {
 
         public void setReviewCount(int newReviewCount) {reviewCount = newReviewCount;}
         public void setCardTotal(int newCardTotal) {cardTotal = newCardTotal;}
-        public void setName(String newName) {name = newName;}
+        public void setName(String newName) {
+            name = newName;
+        }
 
         @Override
         public String toString() {

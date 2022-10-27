@@ -128,10 +128,11 @@ public final class InitDB  {
         }
 
         System.out.println("DECKS:");
-        stmt.execute("SELECT ID FROM DECKS");
+        stmt.execute("SELECT ID, NAME FROM DECKS");
         ResultSet rs3 = stmt.getResultSet();
         while (rs3.next()) {
             System.out.println(rs3.getInt(1));
+            System.out.println(rs3.getString(2));
         }
 
         Main.conn.commit();
