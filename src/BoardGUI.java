@@ -1,3 +1,5 @@
+import org.w3c.dom.css.Rect;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,6 +22,7 @@ public final class BoardGUI implements ActionListener {
     private JButton leftArrow;
     private JButton rightArrow;
     private int currentCardId;
+    private int orderInLine;
     private int currentDeckId;
     private final JPanel pane;
     private final JButton backBtn = new JButton("Back");
@@ -45,7 +48,6 @@ public final class BoardGUI implements ActionListener {
         GridLayout gLayout = new GridLayout(8, 8);
         board.setLayout(gLayout);
         board.setPreferredSize(new Dimension(450, 450));
-        this.renderBoard();
 
         pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
 
@@ -89,7 +91,11 @@ public final class BoardGUI implements ActionListener {
         pane.add(leftCol);
         pane.add(boardWrapper);
 
+        this.renderBoard();
         this.promptUser(currentDeckId);
+
+        pane.revalidate();
+        pane.repaint();
     }
 
     private void renderBoard() {
@@ -133,7 +139,9 @@ public final class BoardGUI implements ActionListener {
 
                 if (!Character.isDigit(currentChar)) {
                     Square sq = squares[squareNum];
-                    sq.setPiece(this.charToPiece(currentChar, squareNum));
+                    if (sq.panelPainted()) {
+                        sq.setPiece(this.charToPiece(currentChar, squareNum));
+                    }
                 }
 
                 if (Character.isDigit(currentChar)) {
@@ -186,12 +194,18 @@ public final class BoardGUI implements ActionListener {
             panel = newPanel;
         }
 
+        public boolean panelPainted() {
+            if (panel.getHeight() != 0) {
+                return true;
+            }
+            return false;
+        }
+
         public void setPiece(Piece newPiece) {
             if (newPiece == null) {
                 throw new IllegalArgumentException("Can't set null piece!");
             }
 
-            // !!! Find way to clone the piece to maintain encapsulation.
             piece = newPiece;
 
             try {
@@ -201,8 +215,9 @@ public final class BoardGUI implements ActionListener {
                 ImageIcon image2 = new ImageIcon(temp2);
                 JLabel label = new JLabel(image2, JLabel.CENTER);
                 panel.add(label);
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
+            } catch (NoSuchFieldException ex) {
+                System.out.println("setPiece encountered an error");
+                System.out.println(ex.getMessage());
             }
         }
         public void removeLabel() {
@@ -222,16 +237,25 @@ public final class BoardGUI implements ActionListener {
             beforeFEN = revCard.getBeforeFEN();
             afterFEN = revCard.getAfterFEN();
             lineNameMain = revCard.getName();
-            lineMoves = revCard.getLine();
+            orderInLine = revCard.getOrderInLine();
 
         } catch (SQLException | ClassNotFoundException ex) {
+            System.out.println("promptUser encountered an error");
             System.out.println(ex.getMessage());
         }
 
         this.paintFEN(beforeFEN);
 
-        infoPanel.removeAll();
-        infoPanel.append(lineNameMain + "\n" + lineMoves + "WHITE TO MOVE");
+        String toMove = "";
+        if (orderInLine % 2 == 0) {
+            toMove = "BLACK TO MOVE";
+        }
+
+        if (orderInLine % 2 != 0) {
+            toMove = "WHITE TO MOVE";
+        }
+
+        infoPanel.setText(lineNameMain + "\n" + toMove);
 
         showAnswer.setEnabled(true);
 
@@ -286,9 +310,9 @@ public final class BoardGUI implements ActionListener {
         for (int i = 0; i < selfRating.length; i++) {
             if (e.getSource() == selfRating[i]) {
                 try {
-                    System.out.println("Rating used revEng");
                     revEng.updateCard(i + 1, currentCardId);
                 } catch (SQLException | ClassNotFoundException ex) {
+                    System.out.println("selfRating actionListenerer encountered an error");
                     System.out.println(ex.getMessage());
                 }
 
