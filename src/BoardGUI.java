@@ -54,9 +54,10 @@ public final class BoardGUI implements ActionListener {
 
         JPanel boardWrapper = new JPanel();
         boardWrapper.add(board);
-        boardWrapper.setMinimumSize(new Dimension(450, 900));
+        boardWrapper.setMinimumSize(new Dimension(450, 600));
         boardWrapper.setLayout(new GridBagLayout());
 
+        buttonBox.setMinimumSize(new Dimension(550, 100));
         selfRating = new JButton[6];
         for (int i = 0; i < selfRating.length; i++) {
             selfRating[i] = new JButton(String.valueOf(i));
@@ -73,22 +74,38 @@ public final class BoardGUI implements ActionListener {
         leftArrow.addActionListener(this);
         backBtn.addActionListener(this);
 
+        JPanel lowerBtnWrapper = new JPanel();
+        lowerBtnWrapper.add(showAnswer);
+        lowerBtnWrapper.add(backBtn);
+        lowerBtnWrapper.setMinimumSize(new Dimension(550, 100));
+        lowerBtnWrapper.setLayout(new GridBagLayout());
+
         arrowBox.add(leftArrow);
         arrowBox.add(rightArrow);
+        arrowBox.setMinimumSize(new Dimension(550, 100));
 
         leftCol = new JPanel();
+
+        JPanel infoPanelWrapper = new JPanel();
         infoPanel = new JTextArea();
         infoPanel.setEditable(false);
-        infoPanel.setFont(new Font("Sans", Font.PLAIN, 12));
+        infoPanel.setFont(new Font("Sans", Font.BOLD, 24));
+        infoPanel.setMinimumSize(new Dimension(550, 250));
+        infoPanel.setBounds(new Rectangle(550, 150));
+        infoPanelWrapper.add(infoPanel);
+        infoPanelWrapper.setLayout(new GridBagLayout());
+        infoPanelWrapper.setMinimumSize(new Dimension(550, 300));
 
-        leftCol.add(infoPanel);
+        buttonBox.setLayout(new GridBagLayout());
+        arrowBox.setLayout(new GridBagLayout());
+
+        leftCol.add(infoPanelWrapper);
         leftCol.add(arrowBox);
         leftCol.add(buttonBox);
-        leftCol.add(showAnswer);
-        leftCol.add(backBtn);
+        leftCol.add(lowerBtnWrapper);
 
         leftCol.setLayout(new BoxLayout(leftCol, BoxLayout.Y_AXIS));
-        leftCol.setMinimumSize(new Dimension(150, 900));
+        leftCol.setMinimumSize(new Dimension(550, 600));
 
         pane.add(leftCol);
         pane.add(boardWrapper);
