@@ -2,9 +2,14 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/**
+/*
  * This Main class contains the main method, which launches the program.
- * @author Jack Vandeleuv
+ *
+ * superMemoAlgo method in the ReviewEngine class is an implementation of the SuperMemo2 algorithm, an open-source,
+ * free-to-use algorithm developed by SuperMemo World. To learn more, please visit the following website:
+ *
+ * https://www.supermemo.com
+ * Algorithm SM-2, (C) Copyright SuperMemo World, 1991.
  */
 public class Main {
     // This static Connection is created when the program is launched, and is maintained throughout the runtime of the

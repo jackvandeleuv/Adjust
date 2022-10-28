@@ -23,7 +23,9 @@ public final class InitDB  {
                             "NAME TEXT)");
             Main.conn.commit();
 
-            // Create a new CARDS table with an INTEGER PRIMARY KEY that is an alias for ROWID.
+            // Create a new CARDS table with an INTEGER PRIMARY KEY that is an alias for ROWID. The values REP_NUMBER,
+            // EASY_FACTOR, IR_INTERVAL, and LAST_REVIEW each refer to a parameter in the SuperMemo2 algorithm, which
+            // is used by the ReviewEngine Class to decide when to show the card to the user.
             stmt.execute("DROP TABLE IF EXISTS CARDS");
             stmt.execute("CREATE TABLE IF NOT EXISTS CARDS(" +
                             "ID INTEGER PRIMARY KEY," +
@@ -49,7 +51,9 @@ public final class InitDB  {
             // Drop any existing table called LINES.
             stmt.execute("DROP TABLE IF EXISTS LINES");
 
-            // Create a new LINES table with an INTEGER PRIMARY KEY that is an alias for ROWID.
+            // Create a new LINES table with an INTEGER PRIMARY KEY that is an alias for ROWID. LINE is the sequence of
+            // moves comprising the opening, written in Standard Algebraic Notation. ECO is the Encyclopedia of Chess
+            // Openings identification code.
             stmt.execute("CREATE TABLE IF NOT EXISTS LINES(" +
                             "ID INTEGER PRIMARY KEY," +
                             "NAME TEXT," +
@@ -60,7 +64,10 @@ public final class InitDB  {
             // Drop any existing table called MOVES.
             stmt.execute("DROP TABLE IF EXISTS MOVES");
 
-            // Create a new MOVES table with an INTEGER PRIMARY KEY that is an alias for ROWID.
+            // Create a new MOVES table with an INTEGER PRIMARY KEY that is an alias for ROWID. ORDER_IN_LINE is the
+            // position of the move in the opening. E.g. in the line "1. e4 e6 2. d4 d5," "d4" is at position 3.
+            // BEFORE_FEN and AFTER_FEN represent the state of the board before and after the move is made using
+            // Forsyth-Edwards Notation.
             stmt.execute("CREATE TABLE IF NOT EXISTS MOVES(" +
                         "ID INTEGER PRIMARY KEY," +
                         "ORDER_IN_LINE INTEGER," +

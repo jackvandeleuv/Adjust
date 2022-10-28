@@ -246,19 +246,11 @@ public final class BoardGUI implements ActionListener {
         try {
             ReviewEngine.ReviewCard revCard = revEng.getNextCard();
 
-            if (revCard.getId() == -1) {
-                throw new RuntimeException("ReviewEngine failed to return a valid ReviewCard object.");
-            }
-
             currentCardId = revCard.getId();
             beforeFEN = revCard.getBeforeFEN();
             afterFEN = revCard.getAfterFEN();
             lineNameMain = revCard.getName();
             orderInLine = revCard.getOrderInLine();
-            System.out.println(currentCardId);
-            System.out.println(beforeFEN);
-            System.out.println(afterFEN);
-            System.out.println(lineNameMain);
 
         } catch (SQLException | ClassNotFoundException ex) {
             System.out.println("promptUser encountered an error");
@@ -307,11 +299,6 @@ public final class BoardGUI implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("beforeFEN:");
-        System.out.println(beforeFEN);
-        System.out.println("afterFEN:");
-        System.out.println(afterFEN);
-
         if (e.getSource() == showAnswer) {
             this.showResults();
         }
