@@ -87,7 +87,7 @@ public class AddCardsGUI implements ActionListener {
         cardsList.setFixedCellWidth(600);
         cardsList.setFixedCellHeight(30);
 
-        // Wrap list components in scrollers to create list that the user can scroll through..
+        // Wrap list components in scrollers to create list that the user can scroll through.
         JScrollPane totalScroller = new JScrollPane(linesList);
         JScrollPane cardsScroller = new JScrollPane(cardsList);
         totalScroller.setPreferredSize(new Dimension(900, 230));
@@ -147,14 +147,13 @@ public class AddCardsGUI implements ActionListener {
         searchTerm = "%" + searchTerm + "%";
 
         // This query returns all items in the LINES table, filtered by ECO and NAME if search terms are provided.
-        StringBuilder query = new StringBuilder();
-        query.append("SELECT ID, NAME, LINE, ECO ");
-        query.append("FROM LINES ");
-        query.append("WHERE ECO LIKE ? ");
-        query.append("OR NAME LIKE ? ");
+        String query = "SELECT ID, NAME, LINE, ECO " +
+                        "FROM LINES " +
+                        "WHERE ECO LIKE ? " +
+                        "OR NAME LIKE ? ";
 
         // Create a parameterized query with the two search terms as parameters.
-        PreparedStatement lineQ = Main.conn.prepareStatement(query.toString());
+        PreparedStatement lineQ = Main.conn.prepareStatement(query);
         lineQ.setString(1, ecoSearch);
         lineQ.setString(2, searchTerm);
 
@@ -194,17 +193,16 @@ public class AddCardsGUI implements ActionListener {
         // This query returns the relevant information about each card in the database. Because we also want to know
         // the information about the line and the move associated with the card, we join both of those tables, which
         // also requires the intermediate CARDS_TO_MOVES table.
-        StringBuilder query = new StringBuilder();
-        query.append("SELECT CARDS.ID, MOVES.ORDER_IN_LINE, LINES.ECO, LINES.NAME, CARDS.LAST_REVIEW ");
-        query.append("FROM DECKS JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID ");
-        query.append("JOIN CARDS_TO_MOVES ON CARDS.ID = CARDS_TO_MOVES.CARDS_ID ");
-        query.append("JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID ");
-        query.append("JOIN LINES ON MOVES.LINES_ID = LINES.ID ");
-        query.append("WHERE DECKS.ID = ? ");
+        String query = "SELECT CARDS.ID, MOVES.ORDER_IN_LINE, LINES.ECO, LINES.NAME, CARDS.LAST_REVIEW " +
+                        "FROM DECKS JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID " +
+                        "JOIN CARDS_TO_MOVES ON CARDS.ID = CARDS_TO_MOVES.CARDS_ID " +
+                        "JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID " +
+                        "JOIN LINES ON MOVES.LINES_ID = LINES.ID " +
+                        "WHERE DECKS.ID = ? ";
 
         // Create a parameterized query, with the primary key for DECKS as a parameter, as we are only interested in
         // cards associated with the current deck.
-        PreparedStatement preStmt = Main.conn.prepareStatement(query.toString());
+        PreparedStatement preStmt = Main.conn.prepareStatement(query);
         preStmt.setInt(1, deckID);
 
         // Execute the query.
@@ -258,10 +256,10 @@ public class AddCardsGUI implements ActionListener {
         // Initialize color choice with an empty string.
         String colorChoice = "";
 
-        // If the JComboBox has WHITE selected, use this SQL subclause.
+        // If the JComboBox has WHITE selected, use this SQL sub-clause.
         if (clr.equals("White")) { colorChoice = " AND MOVES.ORDER_IN_LINE % 2 != 0 "; }
 
-        // If the JComboBox has BLACK selected, use this SQL subclause.
+        // If the JComboBox has BLACK selected, use this SQL sub-clause.
         if (clr.equals("Black")) { colorChoice = " AND MOVES.ORDER_IN_LINE % 2 == 0 "; }
 
         // This query gets all the move primary keys associated with the lines identified by the user, filtered by the
@@ -387,7 +385,7 @@ public class AddCardsGUI implements ActionListener {
         // Delete all cards matching the primary keys of the cardListItems selected by the user.
         PreparedStatement cardDel = Main.conn.prepareStatement("DELETE FROM CARDS WHERE ID = ?");
 
-        // Iterate through the different cardListItems, getting the primary key from each and insering it into the
+        // Iterate through the different cardListItems, getting the primary key from each and inserting it into the
         // parameterized query.
         for (cardListItem choice : choices) {
             int cardPK = choice.getPk();
