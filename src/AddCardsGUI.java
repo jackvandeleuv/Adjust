@@ -29,10 +29,6 @@ public class AddCardsGUI implements ActionListener {
     // CardLayout that allows us to switch between panels based on user input.
     private final CardLayout controller;
 
-    //
-    private List<lineListItem> lines;
-    private List<cardListItem> cards;
-
     private final DefaultListModel<lineListItem> linesModel = new DefaultListModel<>();
     private final JList<lineListItem> linesListComp = new JList<>(linesModel);
     private final DefaultListModel<cardListItem> cardsModel = new DefaultListModel<>();
@@ -59,7 +55,6 @@ public class AddCardsGUI implements ActionListener {
         JScrollPane totalScroller = new JScrollPane(linesListComp);
         totalScroller.setPreferredSize(new Dimension(900, 230));
         this.queryTotalLines("", "");
-        this.updateLineModel();
 
         makeCardsBtn.addActionListener(this);
         clrSel.addActionListener(this);
@@ -71,8 +66,6 @@ public class AddCardsGUI implements ActionListener {
         JScrollPane cardsScroller = new JScrollPane(cardsListComp);
         cardsScroller.setPreferredSize(new Dimension(900, 230));
         this.queryCards();
-        this.updateCardsModel();
-
         backBtn.addActionListener(this);
 
         this.cardsMenu.setLayout(new BoxLayout(this.cardsMenu, BoxLayout.Y_AXIS));
@@ -89,16 +82,6 @@ public class AddCardsGUI implements ActionListener {
         this.cardsMenu.add(cardsScroller);
         this.cardsMenu.revalidate();
         this.cardsMenu.repaint();
-    }
-
-    private void updateLineModel() {
-        linesModel.removeAllElements();
-        for (int i = 0; i < lines.size(); i++) {
-            linesModel.add(i, lines.get(i));
-        }
-        lines.clear();
-        cardsMenu.revalidate();
-        cardsMenu.repaint();
     }
 
     private void queryTotalLines(String ecoSearch, String searchTerm) throws SQLException {
@@ -118,15 +101,20 @@ public class AddCardsGUI implements ActionListener {
         lineQ.setString(2, searchTerm);
 
         ResultSet rs = lineQ.executeQuery();
-        lines = new ArrayList<>();
+        linesModel.clear();
+        int index = 0;
         while (rs.next()) {
             int pk = rs.getInt(1);
             lineListItem line = new lineListItem(pk);
             line.setName(rs.getString(2));
             line.setLine(rs.getString(3));
             line.setEco(rs.getString(4));
-            lines.add(line);
+            linesModel.add(index, line);
+            index = index + 1;
         }
+
+        cardsMenu.revalidate();
+        cardsMenu.repaint();
         Main.conn.commit();
     }
 
@@ -142,7 +130,8 @@ public class AddCardsGUI implements ActionListener {
         preStmt.setInt(1, deckID);
         ResultSet rs = preStmt.executeQuery();
 
-        cards = new ArrayList<>();
+        cardsModel.clear();
+        int index = 0;
         while (rs.next()) {
             int cardPK = rs.getInt(1);
             cardListItem card = new cardListItem(cardPK);
@@ -150,19 +139,13 @@ public class AddCardsGUI implements ActionListener {
             card.setEco(rs.getString(3));
             card.setName(rs.getString(4));
             card.setLastReview(rs.getLong(5));
-            cards.add(card);
+            cardsModel.add(index, card);
+            index = index + 1;
         }
-        Main.conn.commit();
-    }
 
-    private void updateCardsModel() {
-        cardsModel.removeAllElements();
-        for (int i = 0; i < cards.size(); i++) {
-            cardsModel.add(i, cards.get(i));
-        }
-        cards.clear();
         cardsMenu.revalidate();
         cardsMenu.repaint();
+        Main.conn.commit();
     }
 
     private void makeCards(String clr) throws SQLException {
@@ -218,7 +201,7 @@ public class AddCardsGUI implements ActionListener {
         long currentTime = System.currentTimeMillis();
         for (int i = 0; i < movePkList.size(); i++) {
             System.out.println("+++++++++++++++");
-            System.out.println("Insering into cards (deckId, currentTime):");
+            System.out.println("Inserting into cards (deckId, currentTime):");
             System.out.println(deckID);
             System.out.println(currentTime);
             System.out.println("+++++++++++++++");
@@ -273,7 +256,6 @@ public class AddCardsGUI implements ActionListener {
                 String clr = (String) clrSel.getSelectedItem();
                 this.makeCards(clr);
                 this.queryCards();
-                this.updateCardsModel();
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
@@ -283,7 +265,6 @@ public class AddCardsGUI implements ActionListener {
             try {
                 this.deleteCards();
                 this.queryCards();
-                this.updateCardsModel();
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
