@@ -29,93 +29,161 @@ public class AddCardsGUI implements ActionListener {
     // CardLayout that allows us to switch between panels based on user input.
     private final CardLayout controller;
 
+    // This model contains a list of lineListItem objects, each one of which is a set of data about a particular line
+    // that gets displayed on the GUI as an option that the user can select.
     private final DefaultListModel<lineListItem> linesModel = new DefaultListModel<>();
+
+    // This JList displays the contents of the linesModel.
     private final JList<lineListItem> linesListComp = new JList<>(linesModel);
+
+    // This model contains a list of cardListItem objects, each of which is a user-created card with one associated
+    // move in the MOVES table.
     private final DefaultListModel<cardListItem> cardsModel = new DefaultListModel<>();
+
+    // JList that displays the cardsModel.
     private final JList<cardListItem> cardsListComp = new JList<>(cardsModel);
 
+    // JButton that creates a set of new cards based on the selected opening line(s).
     private final JButton makeCardsBtn = new JButton("Make Card(s)");
+
+    // JButton that deletes selected cards.
     private final JButton deleteBtn = new JButton("Delete Card(s)");
+
+    // Returns user to the main menu.
     private final JButton backBtn = new JButton("Back");
+
+    // Allows the user to select black or white. Each line contains alternating moves by black and white. By toggling
+    // this option, the user will add cards to their deck corresponding to the color they pick. E.g. if the user has
+    // "WHITE" toggled, and they hit the makeCardsBtn, they will only make cards for white's moves in the selected line.
     private final JComboBox<String> clrSel = new JComboBox<>(new String[]{"White", "Black"});
 
+    /**
+     * This class is the GUI for modifying the cards contained in a given deck.
+     * @param newCardsMenu The JPanel on which this GUI is painted.
+     * @param deckPK Primary key that identifies the deck currently being reviewed.
+     * @param outerContainer JPanel holding the CardLayout.
+     * @param outerController CardLayout that allows us to switch between panels.
+     * @param mainGUIObj The main menu GUI, which we repaint before returning the user to it.
+     * @throws ClassNotFoundException If the methods interacting with the database cannot successfully execute.
+     * @throws SQLException If a query fails.
+     */
+    public AddCardsGUI(JPanel newCardsMenu, int deckPK, JPanel outerContainer,
+                       CardLayout outerController, MainMenuGUI mainGUIObj) throws ClassNotFoundException, SQLException {
 
-    public AddCardsGUI(JPanel cardsMenu, int deckPK, JPanel outerContainer,
-                       CardLayout outerController, MainMenuGUI modGUIObj) throws ClassNotFoundException, SQLException {
-
-        mainMenu = modGUIObj;
+        // Set the matching instance variables equal to each of the constructor's parameters.
+        mainMenu = mainGUIObj;
         controller = outerController;
         container = outerContainer;
-        this.cardsMenu = cardsMenu;
+        cardsMenu = newCardsMenu;
         deckID = deckPK;
 
+        // Allow the user to select multiple items on these JLists simultaneously.
         linesListComp.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        cardsListComp.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
+        // Set size for items in JLists.
         linesListComp.setFixedCellWidth(600);
         linesListComp.setFixedCellHeight(30);
-        JScrollPane totalScroller = new JScrollPane(linesListComp);
-        totalScroller.setPreferredSize(new Dimension(900, 230));
-        this.queryTotalLines("", "");
+        cardsListComp.setFixedCellWidth(600);
+        cardsListComp.setFixedCellHeight(30);
 
+        // Wrap list components in scrollers to create list that the user can scroll through..
+        JScrollPane totalScroller = new JScrollPane(linesListComp);
+        JScrollPane cardsScroller = new JScrollPane(cardsListComp);
+        totalScroller.setPreferredSize(new Dimension(900, 230));
+        cardsScroller.setPreferredSize(new Dimension(900, 230));
+
+        // Register action listeners.
         makeCardsBtn.addActionListener(this);
         clrSel.addActionListener(this);
         deleteBtn.addActionListener(this);
-
-        cardsListComp.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        cardsListComp.setFixedCellWidth(600);
-        cardsListComp.setFixedCellHeight(30);
-        JScrollPane cardsScroller = new JScrollPane(cardsListComp);
-        cardsScroller.setPreferredSize(new Dimension(900, 230));
-        this.queryCards();
         backBtn.addActionListener(this);
 
-        this.cardsMenu.setLayout(new BoxLayout(this.cardsMenu, BoxLayout.Y_AXIS));
-        this.cardsMenu.setBorder(new EmptyBorder(0, 15, 0, 15));
-
+        // Wrap the different buttons and the ComboBox together in one panel.
         JPanel btnBox = new JPanel();
         btnBox.add(backBtn);
         btnBox.add(deleteBtn);
         btnBox.add(makeCardsBtn);
         btnBox.add(clrSel);
 
-        this.cardsMenu.add(totalScroller);
-        this.cardsMenu.add(btnBox);
-        this.cardsMenu.add(cardsScroller);
-        this.cardsMenu.revalidate();
-        this.cardsMenu.repaint();
+        // Add both scrollers and the JPanel containing buttons and the ComboBox.
+        cardsMenu.add(totalScroller);
+        cardsMenu.add(btnBox);
+        cardsMenu.add(cardsScroller);
+
+        // Set this GUI panel's layout to a vertical box layout.
+        cardsMenu.setLayout(new BoxLayout(this.cardsMenu, BoxLayout.Y_AXIS));
+
+        // Adding padding for the entire panel.
+        cardsMenu.setBorder(new EmptyBorder(0, 15, 0, 15));
+
+        // Update JList with all the available lines found in the database.
+        this.queryTotalLines("", "");
+
+        // Query database for an updated list of all review cards created by the user so far.
+        this.queryCards();
+
+        // Validate and paint the GUI panel.
+        cardsMenu.revalidate();
+        cardsMenu.repaint();
     }
 
+    /**
+     * This method pulls all the different opening lines stored in the database, filtered by two search parameters.
+     * @param ecoSearch User defined search parameter that filters our lines by ECO code. Not implemented yet.
+     * @param searchTerm User defined search parameter that filters our lines by variation name. Not implemented yet.
+     * @throws SQLException If the query cannot be executed, throw an error.
+     */
     private void queryTotalLines(String ecoSearch, String searchTerm) throws SQLException {
+        // Validate input for null strings.
         if (ecoSearch == null || searchTerm == null) {
             throw new IllegalArgumentException("Can't pass null string to queryLines!");
         }
 
+        // % indicates "any number of characters" in SQLite. ECO codes are well-formatted, so we require an exact match
+        // for the beginning of the code. For the name search, we allow any number of characters before or after the
+        // matching substring.
         ecoSearch = ecoSearch + "%";
         searchTerm = "%" + searchTerm + "%";
+
+        // This query returns all items in the LINES table, filtered by ECO and NAME if search terms are provided.
         StringBuilder query = new StringBuilder();
         query.append("SELECT ID, NAME, LINE, ECO ");
         query.append("FROM LINES ");
         query.append("WHERE ECO LIKE ? ");
         query.append("OR NAME LIKE ? ");
+
+        // Create a parameterized query with the two search terms as parameters.
         PreparedStatement lineQ = Main.conn.prepareStatement(query.toString());
         lineQ.setString(1, ecoSearch);
         lineQ.setString(2, searchTerm);
 
+        // Execute query.
         ResultSet rs = lineQ.executeQuery();
+
+        // Remove all lineListItem objects from linesModel.
         linesModel.clear();
+
+        // Iterate over the query result, pulling out the Primary Key, Name, Line, and ECO code.
         int index = 0;
         while (rs.next()) {
             int pk = rs.getInt(1);
+
+            // Instantiate a new lineListItem using the primary key from the LINES tuple. This object represents an
+            // opening line from our database.
             lineListItem line = new lineListItem(pk);
             line.setName(rs.getString(2));
             line.setLine(rs.getString(3));
             line.setEco(rs.getString(4));
+
+            // Store each object in our model, which is displayed by the associated JList.
             linesModel.add(index, line);
             index = index + 1;
         }
 
+        // Revalidate and paint the GUI panel.
         cardsMenu.revalidate();
         cardsMenu.repaint();
-        Main.conn.commit();
     }
 
     private void queryCards() throws SQLException {
