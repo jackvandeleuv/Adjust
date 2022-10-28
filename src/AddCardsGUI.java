@@ -12,31 +12,47 @@ import java.util.List;
  * @author Jack Vandeleuv
  */
 public class AddCardsGUI implements ActionListener {
+    // Primary key identifying the deck we are currently modifying.
+    private final int deckID;
+
+    // The JPanel on which this GUI is painted. We receive this panel as a parameter in the constructor because the
+    // CardLayout needs to have a reference to it.
+    private final JPanel cardsMenu;
+
+    // The container panel that holds all the different menus using CardLayout.
+    private final JPanel container;
+
+    // The main menu panel, which we get a reference to through the constructor. This is necessary to allow us to
+    // repaint the main menu with update deck information before we return to it using the back button.
+    private final MainMenuGUI mainMenu;
+
+    // CardLayout that allows us to switch between panels based on user input.
+    private final CardLayout controller;
+
+    //
     private List<lineListItem> lines;
     private List<cardListItem> cards;
-    private final DefaultListModel<lineListItem> linesModel = new DefaultListModel<>();
-    private final DefaultListModel<cardListItem> cardsModel;
-    private final JList<cardListItem> cardsListComp;
-    private final JList<lineListItem> linesListComp;
-    private final JPanel pane;
-    private final int deckID;
-    private final JButton makeCardsBtn;
-    private final JButton deleteBtn;
-    private int lastCardPK;
-    private final JComboBox<String> clrSel;
-    private final MainMenuGUI mainMenu;
-    private final CardLayout controller;
-    private final JPanel container;
-    private final JButton backBtn = new JButton("Back");
 
-    public AddCardsGUI(JPanel cardsPane, int deckPK, JPanel outerContainer, CardLayout outerController, MainMenuGUI modGUIObj) throws ClassNotFoundException, SQLException {
+    private final DefaultListModel<lineListItem> linesModel = new DefaultListModel<>();
+    private final JList<lineListItem> linesListComp = new JList<>(linesModel);
+    private final DefaultListModel<cardListItem> cardsModel = new DefaultListModel<>();
+    private final JList<cardListItem> cardsListComp = new JList<>(cardsModel);
+
+    private final JButton makeCardsBtn = new JButton("Make Card(s)");
+    private final JButton deleteBtn = new JButton("Delete Card(s)");
+    private final JButton backBtn = new JButton("Back");
+    private final JComboBox<String> clrSel = new JComboBox<>(new String[]{"White", "Black"});
+
+
+    public AddCardsGUI(JPanel cardsMenu, int deckPK, JPanel outerContainer,
+                       CardLayout outerController, MainMenuGUI modGUIObj) throws ClassNotFoundException, SQLException {
+
         mainMenu = modGUIObj;
         controller = outerController;
         container = outerContainer;
-        pane = cardsPane;
+        this.cardsMenu = cardsMenu;
         deckID = deckPK;
 
-        linesListComp = new JList<>(linesModel);
         linesListComp.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         linesListComp.setFixedCellWidth(600);
         linesListComp.setFixedCellHeight(30);
@@ -45,16 +61,10 @@ public class AddCardsGUI implements ActionListener {
         this.queryTotalLines("", "");
         this.updateLineModel();
 
-        makeCardsBtn = new JButton("Make Card(s)");
         makeCardsBtn.addActionListener(this);
-        String[] clrOpts = {"White", "Black"};
-        clrSel = new JComboBox<>(clrOpts);
         clrSel.addActionListener(this);
-        deleteBtn = new JButton("Delete Card(s)");
         deleteBtn.addActionListener(this);
 
-        cardsModel = new DefaultListModel<>();
-        cardsListComp = new JList<>(cardsModel);
         cardsListComp.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         cardsListComp.setFixedCellWidth(600);
         cardsListComp.setFixedCellHeight(30);
@@ -65,8 +75,8 @@ public class AddCardsGUI implements ActionListener {
 
         backBtn.addActionListener(this);
 
-        pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
-        pane.setBorder(new EmptyBorder(0, 15, 0, 15));
+        this.cardsMenu.setLayout(new BoxLayout(this.cardsMenu, BoxLayout.Y_AXIS));
+        this.cardsMenu.setBorder(new EmptyBorder(0, 15, 0, 15));
 
         JPanel btnBox = new JPanel();
         btnBox.add(backBtn);
@@ -74,11 +84,11 @@ public class AddCardsGUI implements ActionListener {
         btnBox.add(makeCardsBtn);
         btnBox.add(clrSel);
 
-        pane.add(totalScroller);
-        pane.add(btnBox);
-        pane.add(cardsScroller);
-        pane.revalidate();
-        pane.repaint();
+        this.cardsMenu.add(totalScroller);
+        this.cardsMenu.add(btnBox);
+        this.cardsMenu.add(cardsScroller);
+        this.cardsMenu.revalidate();
+        this.cardsMenu.repaint();
     }
 
     private void updateLineModel() {
@@ -87,8 +97,8 @@ public class AddCardsGUI implements ActionListener {
             linesModel.add(i, lines.get(i));
         }
         lines.clear();
-        pane.revalidate();
-        pane.repaint();
+        cardsMenu.revalidate();
+        cardsMenu.repaint();
     }
 
     private void queryTotalLines(String ecoSearch, String searchTerm) throws SQLException {
@@ -151,8 +161,8 @@ public class AddCardsGUI implements ActionListener {
             cardsModel.add(i, cards.get(i));
         }
         cards.clear();
-        pane.revalidate();
-        pane.repaint();
+        cardsMenu.revalidate();
+        cardsMenu.repaint();
     }
 
     private void makeCards(String clr) throws SQLException {
@@ -194,10 +204,9 @@ public class AddCardsGUI implements ActionListener {
             }
         }
 
-
-
         PreparedStatement maxID = Main.conn.prepareStatement("SELECT MAX(ID) FROM CARDS");
         ResultSet getKey = maxID.executeQuery();
+        int lastCardPK;
         if (getKey.next()) {
             lastCardPK = getKey.getInt(1);
         } else {

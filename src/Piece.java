@@ -8,12 +8,14 @@ import javax.swing.*;
  * @author Jack Vandeleuv
  */
 public abstract class Piece {
-    // This variable indicates board position.
     private int pos;
 
-    // This variable indicates which player the piece belongs to (white or black).
     private final char team;
 
+    /**
+     * @param newPos This variable indicates board position.
+     * @param newTeam This variable indicates which player the piece belongs to (white or black).
+     */
     public Piece(int newPos, char newTeam) {
         pos = newPos;
         team = newTeam;
@@ -31,10 +33,15 @@ public abstract class Piece {
         pos = newPos;
     }
 
-    // This abstract method will be implemented by specific pieces like King and Pawn. It will define the valid
-    // positions to which this piece can move on a given turn.
+    /**
+     * This abstract method will be implemented by specific pieces like King and Pawn.
+     * @return An int representing the valid positions to which this piece can move on a given turn.
+     */
     public abstract int getValidDestinations();
 
-    // Returns an image icon representation of the Piece.
+    /**
+     * @return Returns an image icon representation of the Piece.
+     * @throws NoSuchFieldException is thrown if an appropriate image is not found in the img directory.
+     */
     public abstract ImageIcon getImage() throws NoSuchFieldException;
 }

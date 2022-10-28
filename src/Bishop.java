@@ -2,6 +2,7 @@ import javax.swing.*;
 
 /**
  * Extension of the Piece class that defines behavior for Bishops.
+ * @author Jack Vandeleuv
  */
 public final class Bishop extends Piece {
     // Superclass constructor uses pos and team to make this a valid Piece.
