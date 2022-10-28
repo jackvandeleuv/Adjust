@@ -1,4 +1,4 @@
-import javax.swing.*;
+import javax.swing.ImageIcon;
 
 /**
  * Extension of the Piece class that defines behavior for Knights.

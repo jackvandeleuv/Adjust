@@ -1,4 +1,6 @@
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.SQLException;
 
 /**
  * This class provides a static method to initialize the database for this application.
@@ -33,7 +35,10 @@ public final class InitDB  {
                             "FOREIGN KEY (DECKS_ID) REFERENCES DECKS(ID))");
             Main.conn.commit();
 
+            // Drop any existing table called CARDS_TO_MOVES.
             stmt.execute("DROP TABLE IF EXISTS CARDS_TO_MOVES");
+
+            // Create a new CARDS_TO_MOVES intermediate table that specifies the relationships between CARDS to MOVES.
             stmt.execute("CREATE TABLE IF NOT EXISTS CARDS_TO_MOVES(" +
                             "CARDS_ID INTEGER," +
                             "MOVES_ID INTEGER," +
@@ -41,7 +46,10 @@ public final class InitDB  {
                             "FOREIGN KEY (MOVES_ID) REFERENCES MOVES(ID))");
             Main.conn.commit();
 
+            // Drop any existing table called LINES.
             stmt.execute("DROP TABLE IF EXISTS LINES");
+
+            // Create a new LINES table with an INTEGER PRIMARY KEY that is an alias for ROWID.
             stmt.execute("CREATE TABLE IF NOT EXISTS LINES(" +
                             "ID INTEGER PRIMARY KEY," +
                             "NAME TEXT," +
@@ -49,7 +57,10 @@ public final class InitDB  {
                             "ECO TEXT)");
             Main.conn.commit();
 
+            // Drop any existing table called MOVES.
             stmt.execute("DROP TABLE IF EXISTS MOVES");
+
+            // Create a new MOVES table with an INTEGER PRIMARY KEY that is an alias for ROWID.
             stmt.execute("CREATE TABLE IF NOT EXISTS MOVES(" +
                         "ID INTEGER PRIMARY KEY," +
                         "ORDER_IN_LINE INTEGER," +
@@ -65,7 +76,11 @@ public final class InitDB  {
         }
     }
 
-    public static void queryDB() throws ClassNotFoundException, SQLException {
+    /**
+     * This method is for debugging. It provides a template for querying the database.
+     * @throws SQLException If an operation cannot be performed, throw an error.
+     */
+    public static void queryDB() throws SQLException {
         Statement stmt = Main.conn.createStatement();
 
         stmt.execute("SELECT CARDS_TO_MOVES.MOVES_ID, CARDS_TO_MOVES.CARDS_ID, CARDS.DECKS_ID FROM CARDS_TO_MOVES JOIN CARDS ON CARDS.ID = CARDS_TO_MOVES.CARDS_ID");

@@ -1,4 +1,4 @@
-import javax.swing.*;
+import javax.swing.ImageIcon;
 
 /**
  * The Piece class is an abstract class that provides the blueprint for the different piece objects involved in

@@ -1,11 +1,22 @@
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JScrollPane;
+import javax.swing.JList;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
+import javax.swing.ListSelectionModel;
+import javax.swing.BoxLayout;
 import java.awt.event.ActionEvent;
+import java.awt.CardLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionListener;
-import java.sql.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 /**
  * This GUI class defines the behavior of the submenu that allows you to add and remove cards from your review decks.
