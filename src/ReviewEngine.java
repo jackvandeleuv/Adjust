@@ -1,8 +1,4 @@
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
 
 public final class ReviewEngine {
     private final int deckId;

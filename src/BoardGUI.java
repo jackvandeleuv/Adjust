@@ -1,5 +1,3 @@
-import org.w3c.dom.css.Rect;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
