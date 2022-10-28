@@ -1,54 +1,40 @@
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import javax.swing.*;
 
+/**
+ * The Piece class is an abstract class that provides the blueprint for the different piece objects involved in
+ * this program's representation of chess. Currently, the board does not allow players to drag and drop pieces; however,
+ * once that feature is implemented this structure will become important, as the classes will define the different
+ * legal moves that can be made by the different pieces.
+ * @author Jack Vandeleuv
+ */
 public abstract class Piece {
+    // This variable indicates board position.
     private int pos;
-    private int xAxis;
-    private int yAxis;
-    private final char team;
 
+    // This variable indicates which player the piece belongs to (white or black).
+    private final char team;
 
     public Piece(int newPos, char newTeam) {
         pos = newPos;
         team = newTeam;
     }
 
-    public int getPos() {
-        return pos;
-    }
-
     public char getTeam() {
         return team;
+    }
+
+    public int getPos() {
+        return pos;
     }
 
     public void setPos(int newPos) {
         pos = newPos;
     }
 
-    public void setxAxis(int newX) {
-        xAxis = newX;
-    }
-
-    public void setyAxis(int newY) {
-        yAxis = newY;
-    }
-
+    // This abstract method will be implemented by specific pieces like King and Pawn. It will define the valid
+    // positions to which this piece can move on a given turn.
     public abstract int getValidDestinations();
 
+    // Returns an image icon representation of the Piece.
     public abstract ImageIcon getImage() throws NoSuchFieldException;
-
-//    @Override
-//    public void paintComponent(Graphics g) {
-//        try {
-//            BufferedImage bImage = this.getImage();
-//            Image resizedImage = bImage.getScaledInstance(100, 100, BufferedImage.SCALE_DEFAULT);
-//            System.out.println(xAxis);
-//            System.out.println(yAxis);
-//            g.drawImage(resizedImage, xAxis, yAxis, this);
-//        } catch (Exception ex) {
-//            System.out.println(ex.getMessage());
-//        }
-//    }
 }

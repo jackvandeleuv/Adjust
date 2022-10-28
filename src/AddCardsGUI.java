@@ -7,10 +7,14 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This GUI class defines the behavior of the submenu that allows you to add and remove cards from your review decks.
+ * @author Jack Vandeleuv
+ */
 public class AddCardsGUI implements ActionListener {
     private List<lineListItem> lines;
     private List<cardListItem> cards;
-    private final DefaultListModel<lineListItem> linesModel;
+    private final DefaultListModel<lineListItem> linesModel = new DefaultListModel<>();
     private final DefaultListModel<cardListItem> cardsModel;
     private final JList<cardListItem> cardsListComp;
     private final JList<lineListItem> linesListComp;
@@ -32,7 +36,6 @@ public class AddCardsGUI implements ActionListener {
         pane = cardsPane;
         deckID = deckPK;
 
-        linesModel = new DefaultListModel<>();
         linesListComp = new JList<>(linesModel);
         linesListComp.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         linesListComp.setFixedCellWidth(600);
@@ -167,9 +170,6 @@ public class AddCardsGUI implements ActionListener {
         if (clr.equals("Black")) {
             colorChoice = " AND MOVES.ORDER_IN_LINE % 2 == 0 ";
         }
-
-        System.out.println("Color choice:");
-        System.out.println(colorChoice);
 
         List<Integer> movePkList = new ArrayList<>();
         // Get all the line ids identified by the user that are not already in a deck.
