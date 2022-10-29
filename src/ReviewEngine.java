@@ -129,79 +129,89 @@ public final class ReviewEngine {
     }
 
     /**
-     * Implementation of the SuperMemo2 Algorithm:
+     * Implementation of the open-source SuperMemo2 Algorithm:
      * Algorithm SM-2, (C) Copyright SuperMemo World, 1991
-     * @param grade
-     * @param repNum
-     * @param easFactor
-     * @param interval
-     * @return
+     *
+     * @param grade The self-rating chosen by the user.
+     * @param repNum The Repetition Number: how many times the card has been successfully reviewed.
+     * @param easFactor Easiness Factor: how easy the card is.
+     * @param interval Inter-Repetition Interval: the number of days to wait before the next review.
+     * @return Returns a double array with three values: repNum, easFactor, and interval.
      */
     private double[] superMemoAlgo(int grade, int repNum, double easFactor, long interval) {
         if (grade >= 3) {
+            // If this conditional is triggered, the user gave a positive grade (3, 4, or 5).
             if (repNum == 0) {
+                // Set the interval based on the Repetition Number already associated with the card.
                 interval = 1;
             } else if (repNum == 1) {
                 interval = 6;
             } else {
                 interval = Math.round(interval * easFactor);
             }
+            // Increment Repetition Number, as we just successfully completed a repetition.
             repNum = repNum + 1;
         } else {
+            // If the user gave a "failing grade" (0, 1, 2), set interval to one day, and Repetition Number to 0.
             repNum = 0;
             interval = 1;
         }
+
+        // Adjust the Easiness Factor based on the grade.
         easFactor = easFactor + (.1 - (5 - grade) * (.08 + (5 - grade) * .02));
+
+        // If the easiness factor ended up below 1.3, set it to 1.3 as a floor.
         if (easFactor < 1.3) {
             easFactor = 1.3;
         }
+
+        // Package the three updated parameters in an array of doubles.
         double[] resultArr = {repNum, easFactor, interval};
         return resultArr;
     }
 
+    /**
+     * This non-static nested class allows us to instantiate ReviewCard objects and return them to external classes.
+     * Each review card represents a card in the CARDS table.
+     */
     public final class ReviewCard {
+        // ID is the primary key for the card.
         private final int id;
-        private final String name;
-        private final String line;
+
+        // Name of the line associated with the card.
+        private final String lineName;
+
+        // Name of the move associated with the card.
+        private final String lineMoves;
+
+        // Position of the board before the move is made, represented in standard FEN chess notation.
         private final String beforeFEN;
+
+        // Position of the board after the move is made, represented in standard FEN chess notation.
         private final String afterFEN;
+
+        // The sequence of the move in the line. The sequence starts with 1, which is the first move made by white
+        // in the sequence of chess moves.
         private final int orderInLine;
 
-        ReviewCard(int newId, String newName, String newLine, String newBeforeFEN, String newAfterFEN, int newOrderInLine) {
+        // Instantiate the ReviewCard with parameters representing the different fields we need to display the card
+        // to the user.
+        ReviewCard(int newId, String newName, String newLine, String newBeforeFEN, String newAfterFEN,
+                   int newOrderInLine) {
             id = newId;
-            name = newName;
-            line = newLine;
+            lineName = newName;
+            lineMoves = newLine;
             beforeFEN = newBeforeFEN;
             afterFEN = newAfterFEN;
             orderInLine = newOrderInLine;
-            System.out.println("RevCard created");
-            System.out.println(newId);
-            System.out.println(newName);
-            System.out.println(beforeFEN);
-            System.out.println(afterFEN);
-
         }
 
-        public int getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getLine() {
-            return line;
-        }
-
-        public String getBeforeFEN() {
-            return beforeFEN;
-        }
-
-        public String getAfterFEN() {
-            return afterFEN;
-        }
-
+        // Getters for the instance variables in this card.
+        public int getId() { return id; }
+        public String getLineName() { return lineName; }
+        public String getLineMoves() { return lineMoves; }
+        public String getBeforeFEN() { return beforeFEN; }
+        public String getAfterFEN() { return afterFEN; }
         public int getOrderInLine() {return orderInLine;}
     }
 }

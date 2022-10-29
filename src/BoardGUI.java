@@ -249,7 +249,7 @@ public final class BoardGUI implements ActionListener {
             currentCardId = revCard.getId();
             beforeFEN = revCard.getBeforeFEN();
             afterFEN = revCard.getAfterFEN();
-            lineNameMain = revCard.getName();
+            lineNameMain = revCard.getLineName();
             orderInLine = revCard.getOrderInLine();
 
         } catch (SQLException | ClassNotFoundException ex) {
