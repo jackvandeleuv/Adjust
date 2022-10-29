@@ -27,7 +27,7 @@ To review the chess positions you've selected, pick a deck and click "REVIEW." Y
 
 When you have an answer in mind, click "Show Answer." The program will now show you the correct move, given the specific line you are studying. To see the next card, give yourself a grade from 0-5. Grade 5 indicates the card was easy and grade 0 indicates the card was difficult. Grades 0-2 are considered failing, whereas grades 3-5 are considered passing. The program will use the grade in deciding how long to wait before showing you the same card again.
 
-A key feature of effective memorization is active recall, where you play an active role in producing a fact from memory. In the future, Adjust will be expanded to allow you to drag and drop positions, which will aid in active recall. For now, it may be beneficial to say a move out loud before you hit "Show Answer," or write it down. 
+A key feature of effective memorization is active recall, where you play an active role in producing a fact from memory. In the future, Adjust will be expanded to allow you to drag and drop chess pieces into new positions, which will aid in active recall. For now, it may be beneficial to say a move out loud before you hit "Show Answer," or write it down. 
 
 # Efficient Studying
 
