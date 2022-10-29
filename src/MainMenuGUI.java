@@ -412,24 +412,20 @@ public final class MainMenuGUI implements ActionListener {
 
                 // Get the primary key of the selected deck.
                 int selDeckPK = selDeck.getDeckPK();
-                try {
-                    // Clear any elements currently on the cardsPane GUI JPanel.
-                    boardPane.removeAll();
 
-                    // Instantiate a new BoardGUI object to define the behavior of the GUI. Pass the boardPane JPanel
-                    // to paint its elements on and a deck primary key, which lets the object know which deck to modify.
-                    // Pass container and controller to allow the BoardGUI to navigate back to the Main Menu. Also
-                    // pass a reference to the current instance to allow BoardGUI to update this MainMenuGUI before
-                    // switching the user back to this panel.
-                    new BoardGUI(selDeckPK, boardPane, container, controller, this);
+                // Clear any elements currently on the cardsPane GUI JPanel.
+                boardPane.removeAll();
 
-                    // Switch to the boardGUI using CardLayout.
-                    controller.show(container, "board");
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                }
+                // Instantiate a new BoardGUI object to define the behavior of the GUI. Pass the boardPane JPanel
+                // to paint its elements on and a deck primary key, which lets the object know which deck to modify.
+                // Pass container and controller to allow the BoardGUI to navigate back to the Main Menu. Also
+                // pass a reference to the current instance to allow BoardGUI to update this MainMenuGUI before
+                // switching the user back to this panel.
+                new BoardGUI(selDeckPK, boardPane, container, controller, this);
+
+                // Switch to the boardGUI using CardLayout.
+                controller.show(container, "board");
             }
-
         }
     }
 

@@ -454,7 +454,7 @@ public class AddCardsGUI implements ActionListener {
 
                 // Switch to the main menu using CardLayout.
                 controller.show(container, "main");
-            } catch (SQLException | ClassNotFoundException ex) {
+            } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
         }
