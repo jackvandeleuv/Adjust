@@ -206,7 +206,7 @@ public final class ReviewEngine {
             orderInLine = newOrderInLine;
         }
 
-        // Getters for the instance variables in this card.
+        // Getters for the instance variables in this object.
         public int getId() { return id; }
         public String getLineName() { return lineName; }
         public String getLineMoves() { return lineMoves; }

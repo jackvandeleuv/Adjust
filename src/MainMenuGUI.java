@@ -1,26 +1,45 @@
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.sql.SQLException;
+import java.sql.ResultSet;
+import java.sql.PreparedStatement;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.BoxLayout;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.JOptionPane;
+import javax.swing.border.EmptyBorder;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.CardLayout;
+import java.awt.Font;
+import java.awt.Dimension;
+import java.awt.GridBagLayout;
 
+/**
+ * This class defines the behavior of the main menu JPanel. It is instantiated when the user launches the application.
+ * @author Jack Vandeleuv
+ */
 public final class MainMenuGUI implements ActionListener {
-    List<DeckListItem> deckList = new ArrayList<>();
     private final JButton createBtn = new JButton("CREATE");
     private final JButton modifyBtn = new JButton("MODIFY");
     private final JButton renameBtn = new JButton("RENAME");
     private final JButton deleteBtn = new JButton("DELETE");
     private final JButton reviewBtn = new JButton("REVIEW");
-    private final JPanel mainPane = new JPanel();
-    private final CardLayout controller = new CardLayout();
     private final JPanel container = new JPanel();
-    private final DefaultListModel<DeckListItem> decksModel = new DefaultListModel<>();
-    private final JList<DeckListItem> decksListComp = new JList<>(decksModel);
+    private final JPanel mainPane = new JPanel();
     private final JPanel cardsPane = new JPanel();
     private final JPanel boardPane = new JPanel();
+    private final CardLayout controller = new CardLayout();
+
+    private final DefaultListModel<DeckListItem> decksModel = new DefaultListModel<>();
+    private final JList<DeckListItem> decksListComp = new JList<>(decksModel);
+
 
     public MainMenuGUI() throws SQLException, ClassNotFoundException {
         JFrame window = new JFrame();
@@ -82,7 +101,7 @@ public final class MainMenuGUI implements ActionListener {
         window.setVisible(true);
     }
 
-    private void updateDeckList() throws SQLException {
+    private void updateDeckModel() throws SQLException {
         StringBuilder cardTotalsQ = new StringBuilder();
         cardTotalsQ.append("SELECT DECKS.ID, COALESCE(COUNT(CARDS.ID), 0) ");
         cardTotalsQ.append("FROM DECKS LEFT JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID ");
@@ -105,32 +124,23 @@ public final class MainMenuGUI implements ActionListener {
         ResultSet rs1 = cardTotalsStmt.executeQuery();
         ResultSet rs2 = toReviewStmt.executeQuery();
 
-        deckList.clear();
+        decksModel.clear();
+        int index1 = 0;
         while (rs1.next()) {
             DeckListItem deck = new DeckListItem(rs1.getInt(1));
             deck.setCardTotal(rs1.getInt(2));
-            deckList.add(deck);
+            decksModel.add(index1, deck);
+            index1 = index1 + 1;
         }
 
-        int index = 0;
+        int index2 = 0;
         while (rs2.next()) {
-            DeckListItem deck = deckList.get(index);
+            DeckListItem deck = decksModel.get(index2);
             deck.setName(rs2.getString(1));
             deck.setReviewCount(rs2.getInt(2));
-            index = index + 1;
+            index2 = index2 + 1;
         }
         Main.conn.commit();
-    }
-
-    public void updateDeckModel() throws SQLException, ClassNotFoundException {
-        this.updateDeckList();
-
-        decksModel.removeAllElements();
-        for (int i = 0; i < deckList.size(); i++) {
-            decksModel.add(i, deckList.get(i));
-        }
-        mainPane.revalidate();
-        mainPane.repaint();
     }
 
     private void deleteDeck(int deckPK) throws ClassNotFoundException, SQLException {
