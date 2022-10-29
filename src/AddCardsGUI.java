@@ -40,19 +40,19 @@ public class AddCardsGUI implements ActionListener {
     // CardLayout that allows us to switch between panels based on user input.
     private final CardLayout controller;
 
-    // This model contains a list of lineListItem objects, each one of which is a set of data about a particular line
+    // This model contains a list of LineListItem objects, each one of which is a set of data about a particular line
     // that gets displayed on the GUI as an option that the user can select.
-    private final DefaultListModel<lineListItem> linesModel = new DefaultListModel<>();
+    private final DefaultListModel<LineListItem> linesModel = new DefaultListModel<>();
 
     // This JList displays the contents of the linesModel.
-    private final JList<lineListItem> linesList = new JList<>(linesModel);
+    private final JList<LineListItem> linesList = new JList<>(linesModel);
 
-    // This model contains a list of cardListItem objects, each of which is a user-created card with one associated
+    // This model contains a list of CardListItem objects, each of which is a user-created card with one associated
     // move in the MOVES table.
-    private final DefaultListModel<cardListItem> cardsModel = new DefaultListModel<>();
+    private final DefaultListModel<CardListItem> cardsModel = new DefaultListModel<>();
 
     // JList that displays the cardsModel.
-    private final JList<cardListItem> cardsList = new JList<>(cardsModel);
+    private final JList<CardListItem> cardsList = new JList<>(cardsModel);
 
     // JButton that creates a set of new cards based on the selected opening line(s).
     private final JButton makeCardsBtn = new JButton("Make Card(s)");
@@ -171,7 +171,7 @@ public class AddCardsGUI implements ActionListener {
         // Execute query.
         ResultSet rs = lineQ.executeQuery();
 
-        // Remove all lineListItem objects from linesModel.
+        // Remove all LineListItem objects from linesModel.
         linesModel.clear();
 
         // Iterate over the query result, pulling out the Primary Key, Name, Line, and ECO code.
@@ -179,9 +179,9 @@ public class AddCardsGUI implements ActionListener {
         while (rs.next()) {
             int pk = rs.getInt(1);
 
-            // Instantiate a new lineListItem using the primary key from the LINES tuple. This object represents an
+            // Instantiate a new LineListItem using the primary key from the LINES tuple. This object represents an
             // opening line from our database.
-            lineListItem line = new lineListItem(pk);
+            LineListItem line = new LineListItem(pk);
             line.setName(rs.getString(2));
             line.setLine(rs.getString(3));
             line.setEco(rs.getString(4));
@@ -223,13 +223,13 @@ public class AddCardsGUI implements ActionListener {
         cardsModel.clear();
 
         // Iterate through the results returned by the query, storing information from each tuple in a corresponding
-        // cardListItem object.
+        // CardListItem object.
         int index = 0;
         while (rs.next()) {
             int cardPK = rs.getInt(1);
 
-            // Create a cardListItem using the primary key. This object represents a user-created review card.
-            cardListItem card = new cardListItem(cardPK);
+            // Create a CardListItem using the primary key. This object represents a user-created review card.
+            CardListItem card = new CardListItem(cardPK);
 
             // Use setters to store the query results in the object.
             card.setOrder(rs.getInt(2));
@@ -255,7 +255,7 @@ public class AddCardsGUI implements ActionListener {
      */
     private void makeCards(String clr) throws SQLException {
         // Get the lines selected by the user.
-        List<lineListItem> choices = linesList.getSelectedValuesList();
+        List<LineListItem> choices = linesList.getSelectedValuesList();
 
         // Create an array with the primary keys of the lines selected by the user.
         int[] linePkList = new int[choices.size()];
@@ -373,7 +373,7 @@ public class AddCardsGUI implements ActionListener {
      */
     private void deleteCards() throws SQLException {
         // Get the cardListItems currently selected in the cardsListComp JList.
-        List<cardListItem> choices = cardsList.getSelectedValuesList();
+        List<CardListItem> choices = cardsList.getSelectedValuesList();
 
         // Delete all the CARDS_TO_MOVES tuples matching the CARDS.ID primary keys selected by the user. Each tuple
         // in this table represents a relationship between CARDS and MOVES.
@@ -381,7 +381,7 @@ public class AddCardsGUI implements ActionListener {
 
         // Iterate through the different cardListItems chosen by the user, getting the primary key from each and
         // inserting it into the parameterized query.
-        for (cardListItem choice : choices) {
+        for (CardListItem choice : choices) {
             int cardPK = choice.getPk();
             relDel.setInt(1, cardPK);
             relDel.addBatch();
@@ -398,7 +398,7 @@ public class AddCardsGUI implements ActionListener {
 
         // Iterate through the different cardListItems, getting the primary key from each and inserting it into the
         // parameterized query.
-        for (cardListItem choice : choices) {
+        for (CardListItem choice : choices) {
             int cardPK = choice.getPk();
             cardDel.setInt(1, cardPK);
             cardDel.addBatch();
@@ -464,7 +464,7 @@ public class AddCardsGUI implements ActionListener {
      * Non-static nested class. Each instance of this class represents a user-created cards, which is paralleled by the
      * items in the CARDS table in database.db.
      */
-    public class cardListItem {
+    public class CardListItem {
         // The primary key for this card, which can be used to retrieve information from the CARDS table in the
         // database.
         private final int pk;
@@ -484,7 +484,7 @@ public class AddCardsGUI implements ActionListener {
         private long lastReview;
 
         // Constructor takes primary key as an argument.
-        public cardListItem(int newPk)  { pk = newPk;  }
+        public CardListItem(int newPk)  { pk = newPk;  }
 
         // Getter for primary key.
         public int getPk() {return pk;}
@@ -510,7 +510,7 @@ public class AddCardsGUI implements ActionListener {
      * Non-static nested class. Each instance of this class represents a chess opening line, which is paralleled by the
      * items in the LINES table in database.db.
      */
-    public class lineListItem {
+    public class LineListItem {
         // The primary key for this card, which can be used to retrieve information from the LINES table in the
         // database.
         private final int pk;
@@ -526,7 +526,7 @@ public class AddCardsGUI implements ActionListener {
         private String eco;
 
         // Constructor takes primary key as an argument.
-        public lineListItem(int newPk)  { pk = newPk; }
+        public LineListItem(int newPk)  { pk = newPk; }
 
         // Getter for primary key.
         public int getPk() {return pk;}
