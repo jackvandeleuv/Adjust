@@ -148,7 +148,7 @@ public final class MainMenuGUI implements ActionListener {
      * This class gets an updated list of decks (including a summary of the cards inside each) and displays it.
      * @throws SQLException If a database operation cannot be performed, throw an exception.
      */
-    public void updateDeckModel() throws SQLException {
+    private void updateDeckModel() throws SQLException {
         // This query selects two elements: DECKS.ID, which is the primary key for each deck in the database, and
         // a count of CARDS.ID contained in each deck. This count represents the total number of cards associated with
         // the deck in the same tuple. COALESCE is necessary in the case where no cards are associated with the deck.
@@ -386,10 +386,9 @@ public final class MainMenuGUI implements ActionListener {
 
                     // Instantiate a new AddCardsGUI object to define the behavior of the GUI. Pass the cardsPane JPanel
                     // to paint its elements on and a deck primary key, which lets the object know which deck to modify.
-                    // Pass container and controller to allow the AddCardsGUI to navigate back to the Main Menu. Also
-                    // pass a reference to the current instance to allow AddCardsGUI to update this MainMenuGUI before
+                    // Pass a reference to the current instance to allow AddCardsGUI to update this MainMenuGUI before
                     // switching the user back to this panel.
-                    new AddCardsGUI(cardsPane, deckPK, container, controller, this);
+                    new AddCardsGUI(cardsPane, deckPK, this);
 
                     // Switch to the AddCardsGUI using the CardLayout.
                     controller.show(container, "cards");
@@ -418,10 +417,9 @@ public final class MainMenuGUI implements ActionListener {
 
                 // Instantiate a new BoardGUI object to define the behavior of the GUI. Pass the boardPane JPanel
                 // to paint its elements on and a deck primary key, which lets the object know which deck to modify.
-                // Pass container and controller to allow the BoardGUI to navigate back to the Main Menu. Also
-                // pass a reference to the current instance to allow BoardGUI to update this MainMenuGUI before
+                // Pass a reference to the current instance to allow BoardGUI to update this MainMenuGUI before
                 // switching the user back to this panel.
-                new BoardGUI(selDeckPK, boardPane, container, controller, this);
+                new BoardGUI(selDeckPK, boardPane, this);
 
                 // Switch to the boardGUI using CardLayout.
                 controller.show(container, "board");
@@ -430,10 +428,22 @@ public final class MainMenuGUI implements ActionListener {
     }
 
     /**
+     * Public method that allows other menus to update the main menu and display it using CardLayout
+     */
+    public void mainReturn() {
+        try {
+            this.updateDeckModel();
+            controller.show(container, "main");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * This non-static nested class wraps together different pieces of information, which together summarize a single
      * deck for the user.
      */
-    public class DeckListItem {
+    public final class DeckListItem {
 
         // Primary key of the deck.
         private final int deckPK;

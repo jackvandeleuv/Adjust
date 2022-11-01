@@ -27,10 +27,6 @@ public final class BoardGUI implements ActionListener {
     // JPanel on which this GUI is painted.
     private final JPanel pane;
 
-    // Container that wraps together the JPanels for each menu using the controller CardLayout.
-    private final JPanel container;
-    private final CardLayout controller;
-
     // Reference to the MainMenuGUI object, which allows us to refresh the mainMenu before returning.
     private final MainMenuGUI mainMenu;
 
@@ -78,16 +74,11 @@ public final class BoardGUI implements ActionListener {
      * Constructor for the review board GUI.
      * @param newCurrentDeckId Primary key for the deck currently being reviewed.
      * @param boardPane JPanel on which this menu is painted.
-     * @param outerContainer JPanel that wraps the different menu panels together.
-     * @param outerController CardLayout that allows us to toggle between panels.
      * @param mainGUI Reference to the main menu GUI, which allows us to refresh it before returning.
      */
-    public BoardGUI(int newCurrentDeckId, JPanel boardPane, JPanel outerContainer,
-                    CardLayout outerController, MainMenuGUI mainGUI) {
+    public BoardGUI(int newCurrentDeckId, JPanel boardPane, MainMenuGUI mainGUI) {
         // Store each of the parameters in an instance variable.
         mainMenu = mainGUI;
-        container = outerContainer;
-        controller = outerController;
         pane = boardPane;
         currentDeckId = newCurrentDeckId;
 
@@ -469,15 +460,8 @@ public final class BoardGUI implements ActionListener {
 
         // If the user hits the back button, return to the main menu.
         if (e.getSource() == backBtn) {
-            try {
-                // Refresh the list of cards displayed by the main menu.
-                mainMenu.updateDeckModel();
-
-                // Switch to the main menu using CardLayout.
-                controller.show(container, "main");
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
+            // Refresh the list of cards displayed by the main menu and switch panels using CardLayout.
+            mainMenu.mainReturn();
         }
 
         // Check if the action event was triggered by any of the self-rating JButtons.

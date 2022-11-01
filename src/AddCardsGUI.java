@@ -30,15 +30,9 @@ public class AddCardsGUI implements ActionListener {
     // CardLayout needs to have a reference to it.
     private final JPanel cardsMenu;
 
-    // The container panel that holds all the different menus using CardLayout.
-    private final JPanel container;
-
     // The main menu panel, which we get a reference to through the constructor. This is necessary to allow us to
     // repaint the main menu with update deck information before we return to it using the back button.
     private final MainMenuGUI mainMenu;
-
-    // CardLayout that allows us to switch between panels based on user input.
-    private final CardLayout controller;
 
     // This model contains a list of LineListItem objects, each one of which is a set of data about a particular line
     // that gets displayed on the GUI as an option that the user can select.
@@ -72,19 +66,15 @@ public class AddCardsGUI implements ActionListener {
      * This class is the GUI for modifying the cards contained in a given deck.
      * @param newCardsMenu The JPanel on which this GUI is painted.
      * @param deckPK Primary key that identifies the deck currently being reviewed.
-     * @param outerContainer JPanel holding the CardLayout.
-     * @param outerController CardLayout that allows us to switch between panels.
      * @param mainGUIObj The main menu GUI, which we repaint before returning the user to it.
      * @throws ClassNotFoundException If the methods interacting with the database cannot successfully execute.
      * @throws SQLException If a query fails.
      */
-    public AddCardsGUI(JPanel newCardsMenu, int deckPK, JPanel outerContainer,
-                       CardLayout outerController, MainMenuGUI mainGUIObj) throws ClassNotFoundException, SQLException {
+    public AddCardsGUI(JPanel newCardsMenu, int deckPK, MainMenuGUI mainGUIObj)
+            throws ClassNotFoundException, SQLException {
 
         // Set the matching instance variables equal to each of the constructor's parameters.
         mainMenu = mainGUIObj;
-        controller = outerController;
-        container = outerContainer;
         cardsMenu = newCardsMenu;
         deckID = deckPK;
 
@@ -448,15 +438,8 @@ public class AddCardsGUI implements ActionListener {
 
         // This conditional is activated if the user clicks the back button.
         if (e.getSource() == backBtn) {
-            try {
-                // Update and repaint the main menu so that it reflects any changes made in this AddCardsGUI.
-                mainMenu.updateDeckModel();
-
-                // Switch to the main menu using CardLayout.
-                controller.show(container, "main");
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
+            // Switch back to the main menu and update and repaint, so it reflects any changes made in this AddCardsGUI.
+            mainMenu.mainReturn();
         }
     }
 
