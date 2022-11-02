@@ -440,10 +440,10 @@ public final class MainMenuGUI implements ActionListener {
     }
 
     /**
-     * This non-static nested class wraps together different pieces of information, which together summarize a single
+     * This static nested class wraps together different pieces of information, which together summarize a single
      * deck for the user.
      */
-    public final class DeckListItem {
+    private static class DeckListItem {
 
         // Primary key of the deck.
         private final int deckPK;

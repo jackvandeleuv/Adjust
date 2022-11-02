@@ -166,15 +166,14 @@ public final class ReviewEngine {
         }
 
         // Package the three updated parameters in an array of doubles.
-        double[] resultArr = {repNum, easFactor, interval};
-        return resultArr;
+        return new double[]{repNum, easFactor, interval};
     }
 
     /**
      * This non-static nested class allows us to instantiate ReviewCard objects and return them to external classes.
      * Each review card represents a card in the CARDS table.
      */
-    public final class ReviewCard {
+    public static class ReviewCard {
         // ID is the primary key for the card.
         private final int id;
 
@@ -194,7 +193,7 @@ public final class ReviewEngine {
         // in the sequence of chess moves.
         private final int orderInLine;
 
-        // Instantiate the ReviewCard with parameters representing the different fields we need to display the card
+        // Constructor for ReviewCard with parameters representing the different fields we need to display the card
         // to the user.
         ReviewCard(int newId, String newName, String newLine, String newBeforeFEN, String newAfterFEN,
                    int newOrderInLine) {

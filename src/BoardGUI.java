@@ -5,7 +5,6 @@ import javax.swing.JTextArea;
 import javax.swing.JLabel;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
-import java.awt.CardLayout;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.GridBagLayout;
@@ -21,9 +20,6 @@ import java.awt.event.ActionListener;
  * @author Jack Vandeleuv
  */
 public final class BoardGUI implements ActionListener {
-    // Primary key of the deck being reviewed in this session.
-    private final int currentDeckId;
-
     // JPanel on which this GUI is painted.
     private final JPanel pane;
 
@@ -80,12 +76,12 @@ public final class BoardGUI implements ActionListener {
         // Store each of the parameters in an instance variable.
         mainMenu = mainGUI;
         pane = boardPane;
-        currentDeckId = newCurrentDeckId;
+        // Primary key of the deck being reviewed in this session.
 
         try {
             // Instantiate a ReviewEngine object, which provides methods for getting cards for review and updating them
             // after they have been reviewed. Pass the primary key for the deck currently being reviewed as an argument.
-            revEng = new ReviewEngine(currentDeckId);
+            revEng = new ReviewEngine(newCurrentDeckId);
         } catch (ClassNotFoundException | SQLException e) {
             System.out.println("Could not instantiate ReviewEngine");
             throw new RuntimeException(e);
@@ -313,25 +309,19 @@ public final class BoardGUI implements ActionListener {
     /**
      * Square is a non-static nested class that holds information about a given square on the displayed chess board.
      */
-    public final class Square {
+    private static class Square {
         // Each Square has a reference to an associated panel that it can modify.
         private final JPanel panel;
-
-        // Squares can have an associated Piece object, although some squares will have no Piece and be empty.
-        private Piece piece;
 
         // Instantiate Square and pass the associated panel.
         public Square(JPanel newPanel) {
             panel = newPanel;
         }
 
+        // Check if the square's has been painted on the GUI by calling the getHeight method. If the panel has not
+        // been painted, getHeight will return 0.
         public boolean panelPainted() {
-            // Check if the square's has been painted on the GUI by calling the getHeight method. If the panel has not
-            // been painted, getHeight will return 0.
-            if (panel.getHeight() != 0) { return true; }
-
-            // If getHeight returned 0, return false.
-            return false;
+            return panel.getHeight() != 0;
         }
 
         // Setter for Piece.
@@ -340,12 +330,12 @@ public final class BoardGUI implements ActionListener {
             if (newPiece == null) { throw new IllegalArgumentException("Can't set null piece!"); }
 
             // Store the reference to the Piece as an instance variable.
-            piece = newPiece;
+            // Squares can have an associated Piece object, although some squares will have no Piece and be empty.
 
             // Paint the piece on the GUI.
             try {
                 // Get the ImageIcon associated with the piece.
-                ImageIcon image = piece.getImage();
+                ImageIcon image = newPiece.getImage();
 
                 // Convert the ImageIcon to an Image to allow resizing.
                 Image temp = image.getImage();
@@ -425,9 +415,7 @@ public final class BoardGUI implements ActionListener {
      * position.
      */
     public void showResults() {
-        /**
-         * Change the position on the board to show the answer immediately.
-         */
+        // Change the position on the board to show the answer immediately.
         this.paintFEN(afterFEN);
 
         // Disable the showAnswer button.
