@@ -8,7 +8,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.ListSelectionModel;
 import javax.swing.BoxLayout;
 import java.awt.event.ActionEvent;
-import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -444,10 +443,10 @@ public class AddCardsGUI implements ActionListener {
     }
 
     /**
-     * Non-static nested class. Each instance of this class represents a user-created cards, which is paralleled by the
+     * Static nested class. Each instance of this class represents a user-created cards, which is paralleled by the
      * items in the CARDS table in database.db.
      */
-    public class CardListItem {
+    private static class CardListItem {
         // The primary key for this card, which can be used to retrieve information from the CARDS table in the
         // database.
         private final int pk;
@@ -490,10 +489,10 @@ public class AddCardsGUI implements ActionListener {
     }
 
     /**
-     * Non-static nested class. Each instance of this class represents a chess opening line, which is paralleled by the
+     * Static nested class. Each instance of this class represents a chess opening line, which is paralleled by the
      * items in the LINES table in database.db.
      */
-    public class LineListItem {
+    private static class LineListItem {
         // The primary key for this card, which can be used to retrieve information from the LINES table in the
         // database.
         private final int pk;
