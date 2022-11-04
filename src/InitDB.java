@@ -83,6 +83,21 @@ public final class InitDB  {
         }
     }
 
+    public static void checkRows() throws SQLException {
+        Statement stmt = Main.conn.createStatement();
+        stmt.execute("SELECT NAME, LINE, ECO FROM LINES LIMIT 500");
+        ResultSet rs = stmt.getResultSet();
+        while (rs.next()) {
+            System.out.print(rs.getString("ECO"));
+            System.out.print(" | ");
+            System.out.print(rs.getString("NAME"));
+            System.out.print(" | ");
+            System.out.print(rs.getString("LINE"));
+            System.out.println("\n");
+        }
+    }
+
+
     /**
      * This method is for debugging. It provides a template for querying the database.
      * @throws SQLException If an operation cannot be performed, throw an error.
@@ -118,7 +133,6 @@ public final class InitDB  {
             System.out.println("IR_INTERVAL:");
             System.out.println(rs2.getInt(3));
             System.out.println("+++++++++++++++");
-
         }
 
         System.out.println("DECKS:");

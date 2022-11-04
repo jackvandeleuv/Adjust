@@ -525,7 +525,13 @@ public class AddCardsGUI implements ActionListener {
          */
         @Override
         public String toString() {
-            return eco + " " + name + " " + line;
+            StringBuilder sb = new StringBuilder();
+            sb.append(eco);
+            sb.append(": ");
+            sb.append(name);
+            sb.append(", Line: ");
+            sb.append(line);
+            return sb.toString();
         }
     }
 }

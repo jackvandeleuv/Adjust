@@ -1,5 +1,6 @@
 import java.io.*;
 import java.sql.*;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -30,14 +31,14 @@ public final class ReadCSV {
             // Validate the line to ensure it is not empty.
             if (!csvLine.isEmpty()) {
 
-                // Split the input by comma.
-                String[] lineArr = csvLine.split(",");
+                // Split each csv by comma and insert each value into a string array.
+                String[] lineArr = ReadCSV.parseCSVLine(csvLine, 4);
 
                 // The ID field is an int, so we call parseInt and pass the String.
                 preStmt.setInt(1, Integer.parseInt(lineArr[0]));
-                preStmt.setString(2, lineArr[1].strip());
-                preStmt.setString(3, lineArr[2].strip());
-                preStmt.setString(4, lineArr[3].strip());
+                preStmt.setString(2, lineArr[1]);
+                preStmt.setString(3, lineArr[2]);
+                preStmt.setString(4, lineArr[3]);
 
                 // Execute the insert operation
                 preStmt.executeUpdate();
@@ -47,6 +48,34 @@ public final class ReadCSV {
         // Commit the transaction.
         System.out.println("makeLines finished");
         Main.conn.commit();
+    }
+
+    /**
+     * Private method that splits a CSV with quotes around each value into a String[].
+     * @param csvLine String representing line of the CSV.
+     * @param ePerRow Elements for this line of the CSV.
+     * @return A String[] with each String representing a value in the CSV.
+     */
+    private static String[] parseCSVLine(String csvLine, int ePerRow) {
+        String[] lineArr = new String[ePerRow];
+        int count = 0;
+        boolean isData = false;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < csvLine.length(); i++) {
+            if (csvLine.charAt(i) == '"') {
+                if (!isData) {
+                    isData = true;
+                } else {
+                    lineArr[count] = sb.toString();
+                    count = count + 1;
+                    sb = new StringBuilder();
+                    isData = false;
+                }
+            } else if (isData) {
+                sb.append(csvLine.charAt(i));
+            }
+        }
+        return lineArr;
     }
 
     /**
@@ -70,13 +99,13 @@ public final class ReadCSV {
             if (!csvLine.isEmpty()) {
 
                 // Split the input by comma.
-                String[] lineArr = csvLine.split(",");
+                String[] lineArr = ReadCSV.parseCSVLine(csvLine, 5);
 
                 // If the relevant field is an int, so we call parseInt and pass the String.
                 preStmt.setInt(1, Integer.parseInt(lineArr[0]));
                 preStmt.setInt(2, Integer.parseInt(lineArr[1]));
-                preStmt.setString(3, lineArr[2].strip());
-                preStmt.setString(4, lineArr[3].strip());
+                preStmt.setString(3, lineArr[2]);
+                preStmt.setString(4, lineArr[3]);
                 preStmt.setInt(5, Integer.parseInt(lineArr[4]));
 
                 // Execute the insertion operation.
