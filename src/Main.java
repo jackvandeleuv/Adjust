@@ -33,6 +33,8 @@ public class Main {
             // Launch the main menu, which provides further options for the user.
             new MainMenuGUI();
 
+            //InitDB.checkRows();
+
         } catch (ClassNotFoundException | SQLException  ex) {
             // If the connection to the database fails, print the error message and terminate the program.
             System.out.println("Could not successfully start program");

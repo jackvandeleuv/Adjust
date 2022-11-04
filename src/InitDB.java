@@ -85,14 +85,17 @@ public final class InitDB  {
 
     public static void checkRows() throws SQLException {
         Statement stmt = Main.conn.createStatement();
-        stmt.execute("SELECT NAME, LINE, ECO FROM LINES LIMIT 500");
+        stmt.execute("SELECT DECKS.NAME, COALESCE(COUNT(CARDS.ID), 0) " +
+                "                            FROM DECKS LEFT JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID " +
+                "                            WHERE (? - CARDS.LAST_REVIEW) > (CARDS.IR_INTERVAL * 86400000) " +
+                "                            OR CARDS.ID IS NULL " +
+                "                            GROUP BY DECKS.ID " +
+                "                            ORDER BY DECKS.NAME DESC ");
         ResultSet rs = stmt.getResultSet();
         while (rs.next()) {
-            System.out.print(rs.getString("ECO"));
+            System.out.print(rs.getString(1));
             System.out.print(" | ");
-            System.out.print(rs.getString("NAME"));
-            System.out.print(" | ");
-            System.out.print(rs.getString("LINE"));
+            System.out.print(rs.getInt(2));
             System.out.println("\n");
         }
     }

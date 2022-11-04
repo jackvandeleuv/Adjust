@@ -12,6 +12,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.JOptionPane;
 import javax.swing.border.EmptyBorder;
+import javax.xml.transform.Result;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.CardLayout;
@@ -153,7 +154,7 @@ public final class MainMenuGUI implements ActionListener {
         // a count of CARDS.ID contained in each deck. This count represents the total number of cards associated with
         // the deck in the same tuple. COALESCE is necessary in the case where no cards are associated with the deck.
         // We perform a left join to avoid excluding decks with no associated cards.
-        String cardTotalsQ = "SELECT DECKS.ID, COALESCE(COUNT(CARDS.ID), 0) " +
+        String cardTotalsQ = "SELECT DECKS.ID, DECKS.NAME, COALESCE(COUNT(CARDS.ID), 0) " +
                             "FROM DECKS LEFT JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID " +
                             "GROUP BY DECKS.ID " +
                             "ORDER BY DECKS.NAME DESC ";
@@ -161,26 +162,21 @@ public final class MainMenuGUI implements ActionListener {
         // This query selects two elements: DECKS.NAME, which is the user-defined name for each deck, and a count of
         // CARDS.ID, grouped by deck, where the card is due to be reviewed. We perform a left join to avoid excluding
         // decks with no associated cards.
-        String toReviewQ = "SELECT DECKS.NAME, COALESCE(COUNT(CARDS.ID), 0) " +
+        String toReviewQ = "SELECT COALESCE(COUNT(CARDS.ID), 0) " +
                             "FROM DECKS LEFT JOIN CARDS ON DECKS.ID = CARDS.DECKS_ID " +
-                            "WHERE (? - CARDS.LAST_REVIEW) > (CARDS.IR_INTERVAL * 86400000) " +
-                            "OR CARDS.ID IS NULL " +
+                            "WHERE ((? - CARDS.LAST_REVIEW) > (CARDS.IR_INTERVAL * 86400000) " +
+                            "OR CARDS.ID IS NULL) AND DECKS.ID = ? " +
                             "GROUP BY DECKS.ID " +
                             "ORDER BY DECKS.NAME DESC ";
-
-        // Get the current UNIX timestamp for this machine.
-        long currentTime = System.currentTimeMillis();
 
         // Create a statement to execute the first query.
         Statement cardTotalsStmt = Main.conn.createStatement();
 
         // Create a parameterized statement for the second query.
         PreparedStatement toReviewStmt = Main.conn.prepareStatement(toReviewQ);
-        toReviewStmt.setLong(1, currentTime);
 
         // Execute both queries.
         ResultSet rs1 = cardTotalsStmt.executeQuery(cardTotalsQ);
-        ResultSet rs2 = toReviewStmt.executeQuery();
 
         // Clear any DeckListItems currently in the decksModel.
         decksModel.clear();
@@ -188,10 +184,12 @@ public final class MainMenuGUI implements ActionListener {
         // Iterate through all the results from the first query, instantiating a new DeckListItem for each.
         int index1 = 0;
         while (rs1.next()) {
+            // Get the primary key and name of the deck represented by this row and add it to an DeckListItem.
             DeckListItem deck = new DeckListItem(rs1.getInt(1));
+            deck.setName(rs1.getString(2));
 
             // Get the column representing the total number of cards associated with the deck and add it to the object.
-            deck.setCardTotal(rs1.getInt(2));
+            deck.setCardTotal(rs1.getInt(3));
             decksModel.add(index1, deck);
             index1 = index1 + 1;
         }
@@ -199,15 +197,23 @@ public final class MainMenuGUI implements ActionListener {
         // Iterate through the results from the second query and store them in the corresponding DeckListItem. Because
         // the two queries are ordered based on the same criteria we perform this iteration without checking the
         // identity of each deck.
-        int index2 = 0;
-        while (rs2.next()) {
-            DeckListItem deck = decksModel.get(index2);
-            deck.setName(rs2.getString(1));
+        ResultSet rs2 = toReviewStmt.getResultSet();
+        for (int i = 0; i < decksModel.size(); i++) {
+            DeckListItem deck = decksModel.get(i);
+            int deckPK = deck.getDeckPK();
+
+            // Get the current UNIX timestamp for this machine.
+            long currentTime = System.currentTimeMillis();
+
+            // Get the review count matching the current deck id and appropriate time since last review.
+            toReviewStmt.setLong(1, currentTime);
+            toReviewStmt.setInt(2, deckPK);
+            toReviewStmt.executeQuery();
 
             // Get the review count from the query and add it to the object. This count is an int representing the
             // number of cards due to be reviewed.
-            deck.setReviewCount(rs2.getInt(2));
-            index2 = index2 + 1;
+            int reviewCount = rs2.getInt(1);
+            deck.setReviewCount(Math.max(reviewCount, 0));
         }
     }
 
@@ -403,8 +409,9 @@ public final class MainMenuGUI implements ActionListener {
             // Get the index of the selected deck.
             int selIndex = decksListComp.getSelectedIndex();
 
-            // -1 is returned if no rows were selected when this action event occurred.
-            if (selIndex != -1) {
+            // -1 is returned if no rows were selected when this action event occurred. If the reviewCount in the
+            // matching DeckListItem is empty there are no cards to review.
+            if (selIndex != -1 && decksModel.get(selIndex).reviewCount != 0) {
 
                 // Get the deck item at the given index and extract the primary key.
                 DeckListItem selDeck = decksModel.get(selIndex);

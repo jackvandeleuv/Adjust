@@ -43,6 +43,7 @@ public final class BoardGUI implements ActionListener {
     // chess notation.
     private String beforeFEN;
     private String afterFEN;
+    private static final String defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     // Primary key of the card currently being reviewed.
     private int currentCardId;
@@ -379,10 +380,15 @@ public final class BoardGUI implements ActionListener {
             afterFEN = revCard.getAfterFEN();
             lineName = revCard.getLineName();
             orderInLine = revCard.getOrderInLine();
+
+            // Allow the user to click the "Show Answer" button. If this try block throws an error, the show button
+            // should not be enabled, as there are no more cards to show.
+            showAnswer.setEnabled(true);
         } catch (SQLException | ClassNotFoundException ex) {
             System.out.println("promptUser encountered an error");
             System.out.println(ex.getMessage());
         } catch (RuntimeException ex) {
+            beforeFEN = defaultFEN;
             System.out.println(ex.getMessage());
         }
 
@@ -397,9 +403,6 @@ public final class BoardGUI implements ActionListener {
 
         // Display the name of the current line and toMove on the info panel.
         infoPanel.setText(lineName + "\n" + toMove);
-
-        // Allow the user to click the "Show Answer" button.
-        showAnswer.setEnabled(true);
 
         // Disable the arrows and rating buttons.
         rightArrow.setEnabled(false);
