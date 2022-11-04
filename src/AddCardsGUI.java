@@ -236,23 +236,7 @@ public class AddCardsGUI implements ActionListener {
         cardsMenu.repaint();
     }
 
-    /**
-     * This method makes new cards based on whichever lines and whatever color is selected when the user clicks the
-     * create button.
-     * @param clr The color (white or black) selected by the user in the JComboBox.
-     * @throws SQLException If the transactions in this method cannot be executed, throw an exception.
-     */
-    private void makeCards(String clr) throws SQLException {
-        // Get the lines selected by the user.
-        List<LineListItem> choices = linesList.getSelectedValuesList();
-
-        // Create an array with the primary keys of the lines selected by the user.
-        int[] linePkList = new int[choices.size()];
-
-        // Iterate through the int array and the ArrayList of lineListItems, storing the primary keys of the latter
-        // in the former.
-        for (int i = 0; i < linePkList.length; i++) { linePkList[i] = choices.get(i).getPk(); }
-
+    private void updateDB(String clr, int linePk) throws SQLException {
         // Initialize color choice with an empty string.
         String colorChoice = "";
 
@@ -265,36 +249,32 @@ public class AddCardsGUI implements ActionListener {
         // This query gets all the move primary keys associated with the lines identified by the user, filtered by the
         // user-selected color (white or black). It excludes moves that are already in the deck we are modifying.
         PreparedStatement movesStmt = Main.conn.prepareStatement(
-                "SELECT MOVES.ID, MOVES.BEFORE_FEN FROM MOVES " +
-                "WHERE LINES_ID = ? AND LINES_ID NOT IN (" +
-                "SELECT MOVES.LINES_ID FROM CARDS " +
-                "JOIN CARDS_TO_MOVES ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID " +
-                "JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID " +
-                "WHERE DECKS_ID = ?)" + colorChoice + " AND MOVES.BEFORE_FEN NOT IN (" +
-                "SELECT MOVES.BEFORE_FEN FROM MOVES " +
-                "JOIN CARDS_TO_MOVES ON MOVES.ID = CARDS_TO_MOVES.MOVES_ID " +
-                "JOIN CARDS ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID " +
-                "WHERE CARDS.DECKS_ID = ?)"
+                "SELECT MOVES.ID FROM MOVES " +
+                        "WHERE LINES_ID = ? AND LINES_ID NOT IN (" +
+                        "SELECT MOVES.LINES_ID FROM CARDS " +
+                        "JOIN CARDS_TO_MOVES ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID " +
+                        "JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID " +
+                        "WHERE DECKS_ID = ?)" + colorChoice + " AND MOVES.BEFORE_FEN NOT IN (" +
+                        "SELECT MOVES.BEFORE_FEN FROM MOVES " +
+                        "JOIN CARDS_TO_MOVES ON MOVES.ID = CARDS_TO_MOVES.MOVES_ID " +
+                        "JOIN CARDS ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID " +
+                        "WHERE CARDS.DECKS_ID = ?)"
         );
 
         // Create an ArrayList to hold the different primary keys.
         List<Integer> movePkList = new ArrayList<>();
 
-        // Create a ResultSet to get results from the query.
+        // Get the primary keys from the query and add each to the ArrayList.
         ResultSet rs = movesStmt.getResultSet();
 
-        // Iterate through the list of LINES.ID primary keys, executing a new query each time.
-        for (int linePk : linePkList) {
-            movesStmt.setInt(1, linePk);
-            movesStmt.setInt(2, deckID);
-            movesStmt.setInt(3, deckID);
-            movesStmt.executeQuery();
+        // Insert the line and deck ids into the paramterized query
+        movesStmt.setInt(1, linePk);
+        movesStmt.setInt(2, deckID);
+        movesStmt.setInt(3, deckID);
+        movesStmt.executeQuery();
 
-            // Get the primary keys from the query and add each to the ArrayList.
-            while (rs.next()) {
-                movePkList.add(rs.getInt(1));
-                System.out.println(rs.getString(2));
-            }
+        while (rs.next()) {
+            movePkList.add(rs.getInt(1));
         }
 
         // In order to make new tuples in the CARDS_TO_MOVES intermediate table, we need to know which CARDS.ID ints are
@@ -355,6 +335,28 @@ public class AddCardsGUI implements ActionListener {
 
         // Commit the transaction.
         Main.conn.commit();
+    }
+
+    /**
+     * This method makes new cards based on whichever lines and whatever color is selected when the user clicks the
+     * create button.
+     * @param clr The color (white or black) selected by the user in the JComboBox.
+     * @throws SQLException If the transactions in this method cannot be executed, throw an exception.
+     */
+    private void makeCards(String clr) throws SQLException {
+        // Get the lines selected by the user.
+        List<LineListItem> choices = linesList.getSelectedValuesList();
+
+        // Create an array with the primary keys of the lines selected by the user.
+        int[] linePkList = new int[choices.size()];
+
+        // Iterate through the int array and the ArrayList of lineListItems, storing the primary keys of the latter
+        // in the former.
+        for (int i = 0; i < linePkList.length; i++) { linePkList[i] = choices.get(i).getPk(); }
+
+        for (int linePk : linePkList) {
+            this.updateDB(clr, linePk);
+        }
     }
 
     /**
