@@ -265,12 +265,12 @@ public class AddCardsGUI implements ActionListener {
         // This query gets all the move primary keys associated with the lines identified by the user, filtered by the
         // user-selected color (white or black). It excludes moves that are already in the deck we are modifying.
         PreparedStatement movesStmt = Main.conn.prepareStatement(
-                "SELECT MOVES.ID FROM MOVES " +
+                "SELECT MOVES.ID, MOVES.BEFORE_FEN FROM MOVES " +
                 "WHERE LINES_ID = ? AND LINES_ID NOT IN (" +
                 "SELECT MOVES.LINES_ID FROM CARDS " +
                 "JOIN CARDS_TO_MOVES ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID " +
                 "JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID " +
-                "WHERE DECKS_ID = ?)" + colorChoice + " AND BEFORE_FEN NOT IN (" +
+                "WHERE DECKS_ID = ?)" + colorChoice + " AND MOVES.BEFORE_FEN NOT IN (" +
                 "SELECT MOVES.BEFORE_FEN FROM MOVES " +
                 "JOIN CARDS_TO_MOVES ON MOVES.ID = CARDS_TO_MOVES.MOVES_ID " +
                 "JOIN CARDS ON CARDS_TO_MOVES.CARDS_ID = CARDS.ID " +
@@ -293,6 +293,7 @@ public class AddCardsGUI implements ActionListener {
             // Get the primary keys from the query and add each to the ArrayList.
             while (rs.next()) {
                 movePkList.add(rs.getInt(1));
+                System.out.println(rs.getString(2));
             }
         }
 

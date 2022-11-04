@@ -179,6 +179,8 @@ public final class BoardGUI implements ActionListener {
         // Pull a new card from the deck and show it to the user.
         this.promptUser();
 
+        leftArrow.setEnabled(true);
+
         // Repaint the elements to incorporate the changes made by promptUser.
         pane.revalidate();
         pane.repaint();
@@ -379,6 +381,8 @@ public final class BoardGUI implements ActionListener {
             orderInLine = revCard.getOrderInLine();
         } catch (SQLException | ClassNotFoundException ex) {
             System.out.println("promptUser encountered an error");
+            System.out.println(ex.getMessage());
+        } catch (RuntimeException ex) {
             System.out.println(ex.getMessage());
         }
 
