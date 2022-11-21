@@ -45,6 +45,10 @@ public final class BoardGUI implements ActionListener {
     // Sequence of the move being reviewed in the associated line.
     private int orderInLine;
 
+    // The different times the application will wait before showing the same card to the user, depending on which of
+    // the selfRating buttons are pressed.
+    private double[] reviewTimes;
+
     // JTextArea that displays information about the position currently being reviewed.
     private final JTextArea infoPanel = new JTextArea(6, 3);
 
@@ -94,8 +98,9 @@ public final class BoardGUI implements ActionListener {
 
         // Instantiate five JButtons, add them to the selfRating array, and register an action listener for each.
         for (int i = 0; i < selfRating.length; i++) {
-            selfRating[i] = new JButton(String.valueOf(i));
+            selfRating[i] = new JButton();
             selfRating[i].addActionListener(this);
+            selfRating[i].setPreferredSize(new Dimension(80, 80));
             buttonBox.add(selfRating[i]);
         }
 
@@ -141,10 +146,10 @@ public final class BoardGUI implements ActionListener {
 
         // Set a minimum size for each panel, which is used by BoxLayout as a preferred (but not guaranteed) minimum
         // size.
+        boardWrapper.setMinimumSize(new Dimension(450, 600));
+        leftCol.setMinimumSize(new Dimension(550, 600));
         arrowBox.setMinimumSize(new Dimension(550, 100));
         lowerBtnWrapper.setMinimumSize(new Dimension(550, 100));
-        leftCol.setMinimumSize(new Dimension(550, 600));
-        boardWrapper.setMinimumSize(new Dimension(450, 600));
         buttonBox.setMinimumSize(new Dimension(550, 100));
 //        scrollPane.setMinimumSize(new Dimension(550, 250));
 
@@ -175,6 +180,24 @@ public final class BoardGUI implements ActionListener {
         // Repaint the elements to incorporate the changes made by promptUser.
         pane.revalidate();
         pane.repaint();
+    }
+
+    /**
+     *  Enable the array of JButtons and add labels indicating the time before next review for each option.
+     */
+    private void paintRatingButtons() {
+        for (int i = 0; i < selfRating.length; i++) {
+            JButton jb = selfRating[i];
+            // Assemble button label using HTML for formatting.
+            String btnStr = "<html><center>[ ";
+            btnStr = btnStr + i;
+            btnStr = btnStr + " ]<br>-----------<br>";
+            btnStr = btnStr + reviewTimes[i];
+            btnStr = btnStr + " days</center></html>";
+            jb.removeAll();
+            jb.add(new JLabel(btnStr));
+            jb.setEnabled(true);
+        }
     }
 
     private void renderBoard() {
@@ -369,6 +392,7 @@ public final class BoardGUI implements ActionListener {
             afterFEN = revCard.getAfterFEN();
             lineName = revCard.getLineName();
             orderInLine = revCard.getOrderInLine();
+            reviewTimes = revCard.getReviewTimes();
 
             // Allow the user to click the "Show Answer" button. If this try block throws an error, the show button
             // should not be enabled, as there are no more cards to show.
@@ -420,9 +444,9 @@ public final class BoardGUI implements ActionListener {
         // Enable the arrow and rating buttons.
         rightArrow.setEnabled(true);
         leftArrow.setEnabled(true);
-        for (JButton jb : selfRating) {
-            jb.setEnabled(true);
-        }
+
+        // Activate the array of JButtons and add labels.
+        paintRatingButtons();
 
         // Repaint the GUI.
         pane.revalidate();

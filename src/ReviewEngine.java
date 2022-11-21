@@ -23,7 +23,7 @@ public final class ReviewEngine {
      * @throws ClassNotFoundException If the JDBC Class cannot be found, throw an exception.
      * @throws SQLException If a database operation cannot be performed, throw an exception.
      */
-    public ReviewEngine(int newDeckId) throws ClassNotFoundException, SQLException {deckId = newDeckId;}
+    public ReviewEngine(int newDeckId) throws ClassNotFoundException, SQLException { deckId = newDeckId; }
 
     /**
      * Gets the first card identified based on the given parameters.
@@ -39,7 +39,8 @@ public final class ReviewEngine {
         // which is the amount of time (in days) that we should wait before showing the card to the user again. To
         // achieve this, we find the difference in milliseconds between the current moment in time and the last review,
         // and compare it to the IR_INTERVAL (there are 86400000 milliseconds in one day).
-        String query = "SELECT CARDS.ID, LINES.NAME, LINES.LINE, " +
+        String query = "SELECT CARDS.ID, CARDS.REP_NUMBER, CARDS.EASY_FACTOR, CARDS.IR_INTERVAL, " +
+                        "LINES.NAME, LINES.LINE, " +
                         "MOVES.BEFORE_FEN, MOVES.AFTER_FEN, MOVES.ORDER_IN_LINE " +
                         "FROM CARDS JOIN CARDS_TO_MOVES ON CARDS.ID = CARDS_TO_MOVES.CARDS_ID " +
                         "JOIN MOVES ON CARDS_TO_MOVES.MOVES_ID = MOVES.ID " +
@@ -68,10 +69,13 @@ public final class ReviewEngine {
         String beforeFEN = rs.getString("BEFORE_FEN");
         String afterFEN = rs.getString("AFTER_FEN");
         int orderInLine = rs.getInt("ORDER_IN_LINE");
+        int repNum = rs.getInt("REP_NUMBER");
+        double interval = rs.getDouble("IR_INTERVAL");
+        double easFactor = rs.getDouble("EASY_FACTOR");
 
         // Validate the different String values and return a new ReviewCard using the queried information.
         if (name != null && line != null && beforeFEN != null && afterFEN != null) {
-            return new ReviewCard(id, name, beforeFEN, afterFEN, orderInLine);
+            return new ReviewCard(id, name, beforeFEN, afterFEN, orderInLine, repNum, interval, easFactor);
         } else {
             // If a ReviewCard was not successfully generated, throw an exception.
            throw new RuntimeException("ReviewCard could not be successfully generated");
@@ -139,7 +143,7 @@ public final class ReviewEngine {
      * @param interval Inter-Repetition Interval: the number of days to wait before the next review.
      * @return Returns a double array with three values: repNum, easFactor, and interval.
      */
-    private double[] superMemoAlgo(int grade, int repNum, double easFactor, long interval) {
+    private double[] superMemoAlgo(int grade, int repNum, double easFactor, double interval) {
         if (grade >= 3) {
             // If this conditional is triggered, the user gave a positive grade (3, 4, or 5).
             if (repNum == 0) {
@@ -174,7 +178,7 @@ public final class ReviewEngine {
      * This non-static nested class allows us to instantiate ReviewCard objects and return them to external classes.
      * Each review card represents a card in the CARDS table.
      */
-    public static class ReviewCard {
+    public class ReviewCard {
         // ID is the primary key for the card.
         private final int id;
 
@@ -191,15 +195,22 @@ public final class ReviewEngine {
         // in the sequence of chess moves.
         private final int orderInLine;
 
+        private final int repNum;
+        private final double easFactor;
+        private final double interval;
+
         // Constructor for ReviewCard with parameters representing the different fields we need to display the card
         // to the user.
         ReviewCard(int newId, String newName, String newBeforeFEN, String newAfterFEN,
-                   int newOrderInLine) {
+                   int newOrderInLine, int rep, double eas, double inter) {
             id = newId;
             lineName = newName;
             beforeFEN = newBeforeFEN;
             afterFEN = newAfterFEN;
             orderInLine = newOrderInLine;
+            repNum = rep;
+            easFactor = eas;
+            interval = inter;
         }
 
         // Getters for the instance variables in this object.
@@ -208,5 +219,15 @@ public final class ReviewEngine {
         public String getBeforeFEN() { return beforeFEN; }
         public String getAfterFEN() { return afterFEN; }
         public int getOrderInLine() {return orderInLine;}
+
+        // Getter that calculates the time before review for each of the different user options.
+        public double[] getReviewTimes() {
+            double[] times = new double[6];
+            for (int i = 0; i < 6; i++) {
+                double[] updatedStats = superMemoAlgo(i, repNum, easFactor, interval);
+                times[i] = updatedStats[2];
+            }
+            return times;
+        }
     }
 }
