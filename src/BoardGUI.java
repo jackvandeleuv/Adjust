@@ -77,7 +77,6 @@ public final class BoardGUI implements ActionListener {
         // Store each of the parameters in an instance variable.
         mainMenu = mainGUI;
         pane = boardPane;
-        // Primary key of the deck being reviewed in this session.
 
         try {
             // Instantiate a ReviewEngine object, which provides methods for getting cards for review and updating them
@@ -177,10 +176,10 @@ public final class BoardGUI implements ActionListener {
         // Add 64 JPanels of the appropriate color to the board JPanel, each representing a square.
         this.renderBoard();
 
+        MainMenuGUI.resetFrame();
+
         // Pull a new card from the deck and show it to the user.
         this.promptUser();
-
-        leftArrow.setEnabled(true);
 
         // Repaint the elements to incorporate the changes made by promptUser.
         pane.revalidate();
@@ -215,6 +214,8 @@ public final class BoardGUI implements ActionListener {
             // If we have reached the end of an 8-square row, flip the offset value.
             if (i % 8 == 0) { offset = !offset; }
         }
+        pane.revalidate();
+        pane.repaint();
     }
 
     /**
@@ -247,10 +248,9 @@ public final class BoardGUI implements ActionListener {
                     // Get the Square object at the appropriate index.
                     Square sq = squares[index];
 
-                    // If the panel has been painted, call the charToPiece method to instantiate the appropriate Piece
-                    // based on the FEN string, and use the setter in Square to pass it a reference to the new Piece
-                    // object.
-                    if (sq.panelPainted()) { sq.setPiece(this.charToPiece(currentChar, index)); }
+                    // Call the charToPiece method to instantiate the appropriate Piece based on the FEN string,
+                    // and use the setter in Square to pass it a reference to the new Piece object.
+                    sq.setPiece(this.charToPiece(currentChar, index));
                 }
 
                 // If the character is a numeric value, that value indicates the number of consecutive blank squares in
@@ -267,6 +267,7 @@ public final class BoardGUI implements ActionListener {
         board.revalidate();
         board.repaint();
     }
+
 
     /**
      * This method receives a character representation of a chess piece and the position of that piece on the board and
@@ -319,12 +320,6 @@ public final class BoardGUI implements ActionListener {
         // Instantiate Square and pass the associated panel.
         public Square(JPanel newPanel) {
             panel = newPanel;
-        }
-
-        // Check if the square's has been painted on the GUI by calling the getHeight method. If the panel has not
-        // been painted, getHeight will return 0.
-        public boolean panelPainted() {
-            return panel.getHeight() != 0;
         }
 
         // Setter for Piece.
