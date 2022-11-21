@@ -12,7 +12,6 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.JOptionPane;
 import javax.swing.border.EmptyBorder;
-import javax.xml.transform.Result;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.CardLayout;
@@ -54,6 +53,8 @@ public final class MainMenuGUI implements ActionListener {
     // JList that displays the decksModel.
     private final JList<DeckListItem> decksListComp = new JList<>(decksModel);
 
+    private static final JFrame window = new JFrame();
+
     /**
      * Class defining the behavior of the Main Menu GUI.
      * @throws SQLException If a database operation cannot be performed, throw an exception.
@@ -61,7 +62,6 @@ public final class MainMenuGUI implements ActionListener {
      */
     public MainMenuGUI() throws SQLException, ClassNotFoundException {
         // Create a JFrame to hold all the JPanels used by the application.
-        JFrame window = new JFrame();
         window.setSize(1000, 600);
 
         // Passing null centers the JFrame in the middle of the screen.
@@ -432,6 +432,11 @@ public final class MainMenuGUI implements ActionListener {
                 controller.show(container, "board");
             }
         }
+    }
+
+    public static void resetFrame() {
+        window.revalidate();
+        window.repaint();
     }
 
     /**
