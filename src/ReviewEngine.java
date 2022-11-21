@@ -71,7 +71,7 @@ public final class ReviewEngine {
 
         // Validate the different String values and return a new ReviewCard using the queried information.
         if (name != null && line != null && beforeFEN != null && afterFEN != null) {
-            return new ReviewCard(id, name, line, beforeFEN, orderInLine);
+            return new ReviewCard(id, name, beforeFEN, afterFEN, orderInLine);
         } else {
             // If a ReviewCard was not successfully generated, throw an exception.
            throw new RuntimeException("ReviewCard could not be successfully generated");

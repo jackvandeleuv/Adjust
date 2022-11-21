@@ -222,7 +222,7 @@ public final class BoardGUI implements ActionListener {
      * This method changes the appearance of the board to display a new chess position.
      * @param fen This string represents the desired board position using standard FEN chess notation.
      */
-    private void paintFEN(String fen) {
+    private void paintWhite(String fen) {
         // Remove any labels attached to the array of 64 Squares.
         for (Square sq : squares) { sq.removePiece(); }
 
@@ -236,7 +236,6 @@ public final class BoardGUI implements ActionListener {
         // The outer for loop iterates through each String, which represents a row of the board.
         int index = 0;
         for (String row : posArr) {
-
             // The inner for loop iterates through characters in the row, each of which represents a square in the row.
             for (int rowIndex = 0; rowIndex < row.length(); rowIndex++) {
                 // Get the character at the current index in the row.
@@ -260,6 +259,57 @@ public final class BoardGUI implements ActionListener {
 
                 // Increment the index to move onto the next square.
                 index = index + 1;
+            }
+        }
+
+        // Repaint the board component with the updated information.
+        board.revalidate();
+        board.repaint();
+    }
+
+    /**
+     * This method changes the appearance of the board to display a new chess position.
+     * @param fen This string represents the desired board position using standard FEN chess notation.
+     */
+    private void paintBlack(String fen) {
+        // Remove any labels attached to the array of 64 Squares.
+        for (Square sq : squares) { sq.removePiece(); }
+
+        // Split the FEN string to separate different pieces of meta-data (like castle availability).
+        String[] metaArr = fen.split(" ");
+
+        // The first element in the metaArr is the board position. Get this String and separate it by "/" to get each
+        // of the 8 rows as a separate string.
+        String[] posArr = metaArr[0].split("/");
+
+        // The outer for loop iterates through each String, which represents a row of the board.
+        int index = 63;
+        for (int i = posArr.length - 1; i >= 0; i--) {
+            String row = posArr[i];
+
+            // The inner for loop iterates through characters in the row, each of which represents a square in the row.
+            for (int rowIndex = row.length() - 1; rowIndex >= 0; rowIndex--) {
+                // Get the character at the current index in the row.
+                char currentChar = row.charAt(rowIndex);
+
+                // If the character is not a numeric value, it is a letter representing a piece.
+                if (!Character.isDigit(currentChar)) {
+
+                    // Get the Square object at the appropriate index.
+                    Square sq = squares[Math.abs(index - 64) - 1];
+
+                    // Call the charToPiece method to instantiate the appropriate Piece based on the FEN string,
+                    // and use the setter in Square to pass it a reference to the new Piece object.
+                    sq.setPiece(this.charToPiece(currentChar, index));
+                }
+
+                // If the character is a numeric value, that value indicates the number of consecutive blank squares in
+                // that row. Because of this, we need to increment the index by a value equal to the number represented
+                // by currentChar. We also subtract 49 to convert from ASCII.
+                if (Character.isDigit(currentChar)) { index = index - ((int)currentChar - 49); }
+
+                // Increment the index to move onto the next square.
+                index = index - 1;
             }
         }
 
@@ -388,7 +438,11 @@ public final class BoardGUI implements ActionListener {
         }
 
         // Update the board GUI with the new beforeFEN string.
-        this.paintFEN(beforeFEN);
+        if (orderInLine % 2 != 0){
+            paintWhite(beforeFEN);
+        } else {
+            paintBlack(beforeFEN);
+        }
 
         // Generate a label string based on whether the sequence of the move in the line is even or odd, which allows
         // us to infer whether it is a white or black move.
@@ -418,7 +472,11 @@ public final class BoardGUI implements ActionListener {
      */
     public void showResults() {
         // Change the position on the board to show the answer immediately.
-        this.paintFEN(afterFEN);
+        if (orderInLine % 2 != 0) {
+            paintWhite(afterFEN);
+        } else {
+            paintBlack(afterFEN);
+        }
 
         // Disable the showAnswer button.
         showAnswer.setEnabled(false);
@@ -445,8 +503,20 @@ public final class BoardGUI implements ActionListener {
         if (e.getSource() == showAnswer) { this.showResults(); }
 
         // Toggle between the board positions before and after the relevant move when the user clicks the arrows.
-        if (e.getSource() == rightArrow) { this.paintFEN(afterFEN); }
-        if (e.getSource() == leftArrow) { this.paintFEN(beforeFEN); }
+        if (e.getSource() == rightArrow) {
+            if (orderInLine % 2 != 0) {
+                paintWhite(afterFEN);
+            } else {
+                paintBlack(afterFEN);
+            }
+        }
+        if (e.getSource() == leftArrow) {
+            if (orderInLine % 2 != 0) {
+                paintWhite(beforeFEN);
+            } else {
+                paintBlack(beforeFEN);
+            }
+        }
 
         // If the user hits the back button, return to the main menu.
         if (e.getSource() == backBtn) {
