@@ -1,5 +1,6 @@
 import java.sql.SQLException;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.GridLayout;
 import java.awt.GridBagLayout;
 import java.awt.Dimension;
@@ -50,7 +51,7 @@ public final class BoardGUI implements ActionListener {
     private double[] reviewTimes;
 
     // JTextArea that displays information about the position currently being reviewed.
-    private final JTextArea infoPanel = new JTextArea(6, 3);
+    private final JTextArea infoPanel = new JTextArea();
 
     // Button array that allows the user to rate how easy it was to recall the information.
     private final JButton[] selfRating = new JButton[6];
@@ -114,16 +115,21 @@ public final class BoardGUI implements ActionListener {
         arrowBox.add(leftArrow);
         arrowBox.add(rightArrow);
 
-        // Add infoPanel to a wrapper and scroller to help keep it aligned.
-        JPanel infoWrapper = new JPanel();
-        infoWrapper.add(infoPanel);
-        JScrollPane scrollPane = new JScrollPane(infoWrapper);
+        // Add infoPanel to a scroller to help keep it aligned.
+        JScrollPane scrollPane = new JScrollPane(infoPanel);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        // Wrap by word and not character.
+        infoPanel.setLineWrap(true);
+        infoPanel.setWrapStyleWord(true);
+
+        // Add padding to the scroller to stop it from touching the side.
+        scrollPane.setBorder(new EmptyBorder(30, 35, 30, 35));
 
         // leftCol wraps all the elements on the left-half of the menu.
         JPanel leftCol = new JPanel();
 
         // Set GridBagLayout to keep the components in each wrapper panel centered.
-        infoWrapper.setLayout(new GridBagLayout());
         lowerBtnWrapper.setLayout(new GridBagLayout());
         boardWrapper.setLayout(new GridBagLayout());
         buttonBox.setLayout(new GridBagLayout());
@@ -150,8 +156,8 @@ public final class BoardGUI implements ActionListener {
         leftCol.setMinimumSize(new Dimension(550, 600));
         arrowBox.setMinimumSize(new Dimension(550, 100));
         lowerBtnWrapper.setMinimumSize(new Dimension(550, 100));
-        buttonBox.setMinimumSize(new Dimension(550, 100));
-//        scrollPane.setMinimumSize(new Dimension(550, 250));
+        buttonBox.setMinimumSize(new Dimension(550, 150));
+        scrollPane.setPreferredSize(new Dimension(500, 250));
 
         // Prevent the user from changing the text that displays in infoPanel.
         infoPanel.setEditable(false);
@@ -415,7 +421,7 @@ public final class BoardGUI implements ActionListener {
         if (orderInLine % 2 != 0) { toMove = "WHITE TO MOVE"; }
 
         // Display the name of the current line and toMove on the info panel.
-        infoPanel.setText(lineName + "\n" + toMove);
+        infoPanel.setText(lineName + "\n\n" + toMove);
 
         // Disable the arrows and rating buttons.
         rightArrow.setEnabled(false);
