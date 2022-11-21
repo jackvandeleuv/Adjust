@@ -1,12 +1,6 @@
 import java.sql.SQLException;
-import javax.swing.JPanel;
-import javax.swing.JButton;
-import javax.swing.JTextArea;
-import javax.swing.JLabel;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
+import javax.swing.*;
 import java.awt.GridLayout;
-import java.awt.Rectangle;
 import java.awt.GridBagLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -116,14 +110,16 @@ public final class BoardGUI implements ActionListener {
         arrowBox.add(rightArrow);
 
         // Add infoPanel to a wrapper to help keep it aligned.
-        JPanel infoPanelWrapper = new JPanel();
-        infoPanelWrapper.add(infoPanel);
+        JScrollPane scrollPane = new JScrollPane();
+        JPanel infoWrapper = new JPanel();
+        scrollPane.add(infoPanel);
+        infoWrapper.add(scrollPane);
 
         // leftCol wraps all the elements on the left-half of the menu.
         JPanel leftCol = new JPanel();
 
         // Set GridBagLayout to keep the components in each wrapper panel centered.
-        infoPanelWrapper.setLayout(new GridBagLayout());
+        infoWrapper.setLayout(new GridBagLayout());
         lowerBtnWrapper.setLayout(new GridBagLayout());
         boardWrapper.setLayout(new GridBagLayout());
         buttonBox.setLayout(new GridBagLayout());
@@ -139,7 +135,7 @@ public final class BoardGUI implements ActionListener {
 
         // Add the different wrapper panels to the leftCol JPanel, which hold all the elements on the left-half of
         // the menu.
-        leftCol.add(infoPanelWrapper);
+        leftCol.add(infoWrapper);
         leftCol.add(arrowBox);
         leftCol.add(buttonBox);
         leftCol.add(lowerBtnWrapper);
@@ -151,11 +147,8 @@ public final class BoardGUI implements ActionListener {
         leftCol.setMinimumSize(new Dimension(550, 600));
         boardWrapper.setMinimumSize(new Dimension(450, 600));
         buttonBox.setMinimumSize(new Dimension(550, 100));
-        infoPanelWrapper.setMinimumSize(new Dimension(550, 300));
-        infoPanel.setMinimumSize(new Dimension(550, 250));
-
-        // Set the bounds of info panel to avoid excessive resizing when the text inside changes.
-        infoPanel.setBounds(new Rectangle(550, 150));
+        scrollPane.setMinimumSize(new Dimension(550, 300));
+        infoWrapper.setMinimumSize(new Dimension(550, 250));
 
         // Prevent the user from changing the text that displays in infoPanel.
         infoPanel.setEditable(false);
@@ -222,7 +215,7 @@ public final class BoardGUI implements ActionListener {
      * This method changes the appearance of the board to display a new chess position.
      * @param fen This string represents the desired board position using standard FEN chess notation.
      */
-    private void paintWhite(String fen) {
+    private void paintFEN(String fen, boolean isWhite) {
         // Remove any labels attached to the array of 64 Squares.
         for (Square sq : squares) { sq.removePiece(); }
 
@@ -244,8 +237,13 @@ public final class BoardGUI implements ActionListener {
                 // If the character is not a numeric value, it is a letter representing a piece.
                 if (!Character.isDigit(currentChar)) {
 
+                    int sqIndex = index;
+                    if (!isWhite) {
+                        sqIndex = Math.abs(index - 64) - 1;
+                    }
+
                     // Get the Square object at the appropriate index.
-                    Square sq = squares[index];
+                    Square sq = squares[sqIndex];
 
                     // Call the charToPiece method to instantiate the appropriate Piece based on the FEN string,
                     // and use the setter in Square to pass it a reference to the new Piece object.
@@ -266,58 +264,6 @@ public final class BoardGUI implements ActionListener {
         board.revalidate();
         board.repaint();
     }
-
-    /**
-     * This method changes the appearance of the board to display a new chess position.
-     * @param fen This string represents the desired board position using standard FEN chess notation.
-     */
-    private void paintBlack(String fen) {
-        // Remove any labels attached to the array of 64 Squares.
-        for (Square sq : squares) { sq.removePiece(); }
-
-        // Split the FEN string to separate different pieces of meta-data (like castle availability).
-        String[] metaArr = fen.split(" ");
-
-        // The first element in the metaArr is the board position. Get this String and separate it by "/" to get each
-        // of the 8 rows as a separate string.
-        String[] posArr = metaArr[0].split("/");
-
-        // The outer for loop iterates through each String, which represents a row of the board.
-        int index = 63;
-        for (int i = posArr.length - 1; i >= 0; i--) {
-            String row = posArr[i];
-
-            // The inner for loop iterates through characters in the row, each of which represents a square in the row.
-            for (int rowIndex = row.length() - 1; rowIndex >= 0; rowIndex--) {
-                // Get the character at the current index in the row.
-                char currentChar = row.charAt(rowIndex);
-
-                // If the character is not a numeric value, it is a letter representing a piece.
-                if (!Character.isDigit(currentChar)) {
-
-                    // Get the Square object at the appropriate index.
-                    Square sq = squares[Math.abs(index - 64) - 1];
-
-                    // Call the charToPiece method to instantiate the appropriate Piece based on the FEN string,
-                    // and use the setter in Square to pass it a reference to the new Piece object.
-                    sq.setPiece(this.charToPiece(currentChar, index));
-                }
-
-                // If the character is a numeric value, that value indicates the number of consecutive blank squares in
-                // that row. Because of this, we need to increment the index by a value equal to the number represented
-                // by currentChar. We also subtract 49 to convert from ASCII.
-                if (Character.isDigit(currentChar)) { index = index - ((int)currentChar - 49); }
-
-                // Increment the index to move onto the next square.
-                index = index - 1;
-            }
-        }
-
-        // Repaint the board component with the updated information.
-        board.revalidate();
-        board.repaint();
-    }
-
 
     /**
      * This method receives a character representation of a chess piece and the position of that piece on the board and
@@ -438,11 +384,7 @@ public final class BoardGUI implements ActionListener {
         }
 
         // Update the board GUI with the new beforeFEN string.
-        if (orderInLine % 2 != 0){
-            paintWhite(beforeFEN);
-        } else {
-            paintBlack(beforeFEN);
-        }
+        paintFEN(beforeFEN, orderInLine % 2 != 0);
 
         // Generate a label string based on whether the sequence of the move in the line is even or odd, which allows
         // us to infer whether it is a white or black move.
@@ -470,13 +412,9 @@ public final class BoardGUI implements ActionListener {
      * best guess about the position and are ready to see the answer, i.e. correct chess move given the starting
      * position.
      */
-    public void showResults() {
+    public void showPos() {
         // Change the position on the board to show the answer immediately.
-        if (orderInLine % 2 != 0) {
-            paintWhite(afterFEN);
-        } else {
-            paintBlack(afterFEN);
-        }
+        paintFEN(afterFEN, orderInLine % 2 != 0);
 
         // Disable the showAnswer button.
         showAnswer.setEnabled(false);
@@ -500,22 +438,14 @@ public final class BoardGUI implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         // Show the answer and toggle the components when the user hits "Show Answer."
-        if (e.getSource() == showAnswer) { this.showResults(); }
+        if (e.getSource() == showAnswer) { this.showPos(); }
 
         // Toggle between the board positions before and after the relevant move when the user clicks the arrows.
         if (e.getSource() == rightArrow) {
-            if (orderInLine % 2 != 0) {
-                paintWhite(afterFEN);
-            } else {
-                paintBlack(afterFEN);
-            }
+            paintFEN(afterFEN, orderInLine % 2 != 0);
         }
         if (e.getSource() == leftArrow) {
-            if (orderInLine % 2 != 0) {
-                paintWhite(beforeFEN);
-            } else {
-                paintBlack(beforeFEN);
-            }
+            paintFEN(beforeFEN, orderInLine % 2 != 0);
         }
 
         // If the user hits the back button, return to the main menu.
