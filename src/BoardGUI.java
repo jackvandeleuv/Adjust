@@ -46,7 +46,7 @@ public final class BoardGUI implements ActionListener {
     private int orderInLine;
 
     // JTextArea that displays information about the position currently being reviewed.
-    private final JTextArea infoPanel = new JTextArea();
+    private final JTextArea infoPanel = new JTextArea(6, 3);
 
     // Button array that allows the user to rate how easy it was to recall the information.
     private final JButton[] selfRating = new JButton[6];
@@ -109,11 +109,10 @@ public final class BoardGUI implements ActionListener {
         arrowBox.add(leftArrow);
         arrowBox.add(rightArrow);
 
-        // Add infoPanel to a wrapper to help keep it aligned.
-        JScrollPane scrollPane = new JScrollPane();
+        // Add infoPanel to a wrapper and scroller to help keep it aligned.
         JPanel infoWrapper = new JPanel();
-        scrollPane.add(infoPanel);
-        infoWrapper.add(scrollPane);
+        infoWrapper.add(infoPanel);
+        JScrollPane scrollPane = new JScrollPane(infoWrapper);
 
         // leftCol wraps all the elements on the left-half of the menu.
         JPanel leftCol = new JPanel();
@@ -135,7 +134,7 @@ public final class BoardGUI implements ActionListener {
 
         // Add the different wrapper panels to the leftCol JPanel, which hold all the elements on the left-half of
         // the menu.
-        leftCol.add(infoWrapper);
+        leftCol.add(scrollPane);
         leftCol.add(arrowBox);
         leftCol.add(buttonBox);
         leftCol.add(lowerBtnWrapper);
@@ -147,8 +146,7 @@ public final class BoardGUI implements ActionListener {
         leftCol.setMinimumSize(new Dimension(550, 600));
         boardWrapper.setMinimumSize(new Dimension(450, 600));
         buttonBox.setMinimumSize(new Dimension(550, 100));
-        scrollPane.setMinimumSize(new Dimension(550, 300));
-        infoWrapper.setMinimumSize(new Dimension(550, 250));
+//        scrollPane.setMinimumSize(new Dimension(550, 250));
 
         // Prevent the user from changing the text that displays in infoPanel.
         infoPanel.setEditable(false);
