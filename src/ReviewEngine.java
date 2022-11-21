@@ -46,6 +46,7 @@ public final class ReviewEngine {
                         "JOIN LINES ON MOVES.LINES_ID = LINES.ID " +
                         "WHERE CARDS.DECKS_ID = ? " +
                         "AND (? - CARDS.LAST_REVIEW) > (CARDS.IR_INTERVAL * 86400000) " +
+                        "ORDER BY RANDOM() " +
                         "LIMIT 1 ";
 
         // Get the current UNIX time-stamp on this machine.
@@ -70,7 +71,7 @@ public final class ReviewEngine {
 
         // Validate the different String values and return a new ReviewCard using the queried information.
         if (name != null && line != null && beforeFEN != null && afterFEN != null) {
-            return new ReviewCard(id, name, line, beforeFEN, afterFEN, orderInLine);
+            return new ReviewCard(id, name, line, beforeFEN, orderInLine);
         } else {
             // If a ReviewCard was not successfully generated, throw an exception.
            throw new RuntimeException("ReviewCard could not be successfully generated");
@@ -180,9 +181,6 @@ public final class ReviewEngine {
         // Name of the line associated with the card.
         private final String lineName;
 
-        // Name of the move associated with the card.
-        private final String lineMoves;
-
         // Position of the board before the move is made, represented in standard FEN chess notation.
         private final String beforeFEN;
 
@@ -195,11 +193,10 @@ public final class ReviewEngine {
 
         // Constructor for ReviewCard with parameters representing the different fields we need to display the card
         // to the user.
-        ReviewCard(int newId, String newName, String newLine, String newBeforeFEN, String newAfterFEN,
+        ReviewCard(int newId, String newName, String newBeforeFEN, String newAfterFEN,
                    int newOrderInLine) {
             id = newId;
             lineName = newName;
-            lineMoves = newLine;
             beforeFEN = newBeforeFEN;
             afterFEN = newAfterFEN;
             orderInLine = newOrderInLine;
@@ -208,7 +205,6 @@ public final class ReviewEngine {
         // Getters for the instance variables in this object.
         public int getId() { return id; }
         public String getLineName() { return lineName; }
-        public String getLineMoves() { return lineMoves; }
         public String getBeforeFEN() { return beforeFEN; }
         public String getAfterFEN() { return afterFEN; }
         public int getOrderInLine() {return orderInLine;}
